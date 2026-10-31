@@ -111,7 +111,7 @@ bool WeatherManager_::locate() {
         return true;
     }
 
-    String city = settings.weather_city;
+    String city = settings.weatherCity();
     String region;
     int comma = city.indexOf(',');
     if (comma >= 0) {
@@ -182,9 +182,6 @@ bool WeatherManager_::fetch() {
 
 void WeatherManager_::tick() {
     const auto& settings = SettingsManager.settings;
-    if (settings.weather_city.isEmpty()) {
-        return;
-    }
     const auto& inactive = settings.inactive_faces;
     if (std::find(inactive.begin(), inactive.end(), "weather") != inactive.end()) {
         return;

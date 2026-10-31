@@ -8,7 +8,7 @@ Firmware that turns an Ulanzi TC001 pixel clock into a glucose display. It reads
 
 ## What it does
 
-- Five clock faces: Glucose graph and value, Value and delta, Current time and BG value, Time only, and Weather
+- Five clock faces: Value and delta, Weather, Glucose graph and value, Current time and BG value, and Time only
 - Restarts itself when readings stop: if no new reading arrives for 15 minutes, the clock restarts and signs in to the data source again
 - mg/dL and mmol/L
 - Configurable low and high limits, with a color for each range
@@ -37,15 +37,15 @@ Preview every face on the [install page](https://josephfanpm.github.io/diabetesc
 
 | Face | What it shows |
 | ---- | ------------- |
-| Glucose graph and value | A short glucose graph, the value, and trend dots on the right edge: 2 white dots for flat, white and green for 45°, 3 dots for straight up or down, 4 for double arrows; colored dots above mean rising, below mean falling. Bars under the value count the minutes since the last reading: green for 1–5, yellow from 6, and the old-data color once data is old. |
 | Value and delta | The value, the trend arrow, and the change since the previous reading. This is the default face. |
+| Weather | A three-letter city code, a weather icon, and the temperature. New York City until you set a city. Glucose alarms still sound on this face. |
+| Glucose graph and value | A short glucose graph, the value, and trend dots on the right edge: 2 white dots for flat, white and green for 45°, 3 dots for straight up or down, 4 for double arrows; colored dots above mean rising, below mean falling. Bars under the value count the minutes since the last reading: green for 1–5, yellow from 6, and the old-data color once data is old. |
 | Current time and BG value | The time and the value, with the same trend dots. |
 | Time only | Only the time. Glucose is hidden, and new glucose alarms are paused while this face is selected. |
-| Weather | A three-letter city code, a weather icon, and the temperature. Off by default. Glucose alarms still sound on this face. |
 
 ### Weather
 
-Turn on the Weather face in the **Clock faces** card on the **Display** tab, then open its drawer. If the city is empty, the page fills in your location; the location button does it again. Or start typing a city and pick one from the suggestions. A typed city without a pick also works: adding a state, province or country after a comma, for example `Austin, TX`, picks between cities with the same name. The clock shows the city's initials when the name has three or more words (Salt Lake City is SLC), otherwise its first three letters. Choose °F or °C.
+All faces are on when the clock is first set up. Open the Weather drawer in the **Clock faces** card on the **Display** tab. If the city is empty, the page fills in your location; the location button does it again. Or start typing a city and pick one from the suggestions. A typed city without a pick also works: adding a state, province or country after a comma, for example `Austin, TX`, picks between cities with the same name. The clock shows the city's initials when the name has three or more words (Salt Lake City is SLC), otherwise its first three letters. Choose °F or °C.
 
 Suggestions and the location need internet on the phone or computer, so they don't work while it's joined to the clock's own `nsclock` network. Browsers only share your exact location with HTTPS pages, so the clock's settings page uses your internet address instead, which gives a nearby city.
 

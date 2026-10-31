@@ -152,7 +152,7 @@ RenderDecision BGDisplayFaceWeather::getRenderDecision(const RenderContext& ctx)
 // A code made from the city: the initials of a name of three or more words ("Salt Lake City" is
 // SLC), otherwise its first three letters.
 String BGDisplayFaceWeather::getCityCode() const {
-    String city = SettingsManager.settings.weather_city;
+    String city = SettingsManager.settings.weatherCity();
     int comma = city.indexOf(',');
     if (comma >= 0) {
         city = city.substring(0, comma);

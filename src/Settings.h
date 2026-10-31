@@ -124,6 +124,9 @@ public:
     // Weather face: the city to show, its coordinates when picked from the settings page's
     // suggestions (NAN when typed), and the temperature unit.
     String weather_city;
+    // Shown until a city is set.
+    static constexpr const char* DEFAULT_WEATHER_CITY = "New York City";
+    String weatherCity() const { return weather_city.isEmpty() ? DEFAULT_WEATHER_CITY : weather_city; }
     float weather_latitude = NAN;
     float weather_longitude = NAN;
     bool weather_fahrenheit = true;

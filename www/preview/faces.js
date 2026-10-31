@@ -250,11 +250,11 @@ function faceWeather(m, ctx) {
 }
 
 const FACES = [
-    { id: "graph_and_bg", name: "Glucose graph and value", draw: faceGraphAndValue },
     { id: "value_and_diff", name: "Value and delta", draw: faceValueAndDelta },
+    { id: "weather", name: "Weather", draw: faceWeather },
+    { id: "graph_and_bg", name: "Glucose graph and value", draw: faceGraphAndValue },
     { id: "clock", name: "Current time and BG value", draw: faceClockAndValue },
     { id: "time_only", name: "Time only", draw: faceTimeOnly },
-    { id: "weather", name: "Weather", draw: faceWeather },
 ]
 
 // ---------- sample readings ----------

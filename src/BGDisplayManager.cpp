@@ -38,11 +38,11 @@ void BGDisplayManager_::setup() {
 
     // Stable IDs identify faces; registration order only controls navigation.
     faces = {
-        {"graph_and_bg", "Graph and BG", new BGDisplayFaceGraphAndBG()},
         {"value_and_diff", "Value and diff", new BGDisplayFaceValueAndDiff()},
+        {"weather", "Weather", new BGDisplayFaceWeather()},
+        {"graph_and_bg", "Graph and BG", new BGDisplayFaceGraphAndBG()},
         {"clock", "Clock and value", new BGDisplayFaceClock()},
         {"time_only", "Time only", new BGDisplayFaceTimeOnly()},
-        {"weather", "Weather", new BGDisplayFaceWeather()},
     };
 
     configureActiveFaces();

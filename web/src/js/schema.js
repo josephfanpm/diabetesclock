@@ -62,11 +62,11 @@
 
 // Stable IDs must match BGDisplayManager::setup(); array order controls UI display order.
 const FACES = [
-    { id: "graph_and_bg", name: "Glucose graph and value" },
     { id: "value_and_diff", name: "Value and delta" },
+    { id: "weather", name: "Weather" },
+    { id: "graph_and_bg", name: "Glucose graph and value" },
     { id: "clock", name: "Current time and BG value" },
     { id: "time_only", name: "Time only" },
-    { id: "weather", name: "Weather" },
 ]
 
 // Clocks set up on 1.0.0 or earlier stored each face as its number, the face's index in this order.
@@ -377,7 +377,7 @@ function validateConfig(c, ctx) {
         need("face_schedule", new Set(rows.map(row => row.time)).size === rows.length, "Two rows have the same time.")
     }
     if (active.includes("weather")) {
-        need("weather_city", text(c.weather_city).length >= 2 && text(c.weather_city).length <= 64, "Enter a city.")
+        need("weather_city", text(c.weather_city).length !== 1 && text(c.weather_city).length <= 64, "Enter a city.")
         need("weather_units", inOptions(c.weather_units, WEATHER_UNITS), "Choose °F or °C.")
     }
     need("tz", RX.timezone.test(text(c.tz_libc)) && (!ctx.tzNames || ctx.tzNames.has(c.tz)), "Please select your time zone.")

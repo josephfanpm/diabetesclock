@@ -429,7 +429,7 @@ function suggestList(input, id, row, pick) {
 // City suggestions from Open-Meteo's open-source geocoder, the same one the clock uses. Typing clears the saved
 // coordinates; picking a suggestion sets them. Without internet, as on the clock's own Wi-Fi, it stays a plain text box.
 function cityInput() {
-    const input = textInput("weather_city", { placeholder: "Austin, TX", maxlength: 64, trim: true })
+    const input = textInput("weather_city", { placeholder: "New York City", maxlength: 64, trim: true })
     const { list, show } = suggestList(input, "weather_city_list",
         p => [el("span", p.name), el("span.muted", [p.admin1, p.country].filter(Boolean).join(", "))],
         p => setCity(input, placeLabel(p.name, p.country_code, p.admin1, p.country), p.latitude, p.longitude))
