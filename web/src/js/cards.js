@@ -358,23 +358,116 @@ function drawer(title, body) {
     return el("div.drawer", el("div.row.spread", el("h3", title), toggle), panel)
 }
 
-// The code defaults to the city's initials when it has three or more words, otherwise its first three letters.
-function cityCode(city) {
-    const name = String(city || "").split(",")[0].trim()
-    const initials = name.split(/[\s-]+/).filter(Boolean).map(w => w[0]).join("")
-    return (initials.length >= 3 ? initials : name.replace(/[^A-Za-z]/g, "")).slice(0, 3).toUpperCase()
+function weatherSettings() {
+    // Fill an empty city from the visitor's location the first time the drawer opens.
+    const input = cityInput()
+    if (!form.get("weather_city") && !ui.weatherLocated) { ui.weatherLocated = true; locateCity(input, { auto: true }) }
+    return el("div.stack",
+        field("weather_city", "City", input),
+        field("weather_units", "Units", segmented("weather_units", WEATHER_UNITS, { label: "Units" })))
 }
 
-function weatherSettings() {
-    const code = reactive(["weather_city"], () => {
-        const input = textInput("weather_code", { placeholder: cityCode(form.get("weather_city")), maxlength: 3, trim: true })
-        input.addEventListener("input", () => { input.value = input.value.toUpperCase(); form.set("weather_code", input.value) })
-        return field("weather_code", "Code", input)
+const US_STATE_CODES = { Alabama: "AL", Alaska: "AK", Arizona: "AZ", Arkansas: "AR", California: "CA", Colorado: "CO",
+    Connecticut: "CT", Delaware: "DE", Florida: "FL", Georgia: "GA", Hawaii: "HI", Idaho: "ID", Illinois: "IL", Indiana: "IN",
+    Iowa: "IA", Kansas: "KS", Kentucky: "KY", Louisiana: "LA", Maine: "ME", Maryland: "MD", Massachusetts: "MA", Michigan: "MI",
+    Minnesota: "MN", Mississippi: "MS", Missouri: "MO", Montana: "MT", Nebraska: "NE", Nevada: "NV", "New Hampshire": "NH",
+    "New Jersey": "NJ", "New Mexico": "NM", "New York": "NY", "North Carolina": "NC", "North Dakota": "ND", Ohio: "OH",
+    Oklahoma: "OK", Oregon: "OR", Pennsylvania: "PA", "Rhode Island": "RI", "South Carolina": "SC", "South Dakota": "SD",
+    Tennessee: "TN", Texas: "TX", Utah: "UT", Vermont: "VT", Virginia: "VA", Washington: "WA", "West Virginia": "WV",
+    Wisconsin: "WI", Wyoming: "WY", "District of Columbia": "DC" }
+
+// "Austin, TX" in the US, "London, United Kingdom" elsewhere.
+function placeLabel(name, countryCode, region, country) {
+    const after = countryCode === "US" ? US_STATE_CODES[region] || region : country || region
+    return after ? `${name}, ${after}` : name
+}
+
+// Save a city's name and coordinates, so the clock needs no lookup of its own.
+function setCity(input, name, latitude, longitude) {
+    input.value = name
+    form.set("weather_city", name)
+    form.set("weather_latitude", Math.round(latitude * 10000) / 10000)
+    form.set("weather_longitude", Math.round(longitude * 10000) / 10000)
+    form.touch("weather_city")
+}
+
+// City suggestions from Open-Meteo's open-source geocoder, the same one the clock uses. Typing clears the saved
+// coordinates; picking a suggestion sets them. Without internet, as on the clock's own Wi-Fi, it stays a plain text box.
+function cityInput() {
+    const input = textInput("weather_city", { placeholder: "Austin, TX", maxlength: 64, trim: true })
+    const list = el("ul.suggest", { id: "weather_city_list", role: "listbox", hidden: true })
+    Object.entries({ role: "combobox", "aria-autocomplete": "list", "aria-controls": list.id, "aria-expanded": "false" })
+        .forEach(([k, v]) => input.setAttribute(k, v))
+    let places = [], active = -1, timer, request = 0
+
+    const show = found => {
+        places = found
+        active = -1
+        list.replaceChildren(...found.map((p, i) => el("li", {
+            role: "option", id: `weather_city_${i}`,
+            onpointerdown: e => { e.preventDefault(); pick(p) },
+        }, el("span", p.name), el("span.muted", [p.admin1, p.country].filter(Boolean).join(", ")))))
+        list.hidden = !found.length
+        input.setAttribute("aria-expanded", String(!list.hidden))
+        input.removeAttribute("aria-activedescendant")
+    }
+    const highlight = i => {
+        active = (i + places.length) % places.length
+        $$("li", list).forEach((li, j) => li.setAttribute("aria-selected", String(j === active)))
+        input.setAttribute("aria-activedescendant", `weather_city_${active}`)
+    }
+    const pick = p => {
+        setCity(input, placeLabel(p.name, p.country_code, p.admin1, p.country), p.latitude, p.longitude)
+        show([])
+    }
+    const search = async () => {
+        const name = input.value.split(",")[0].trim()
+        const id = ++request
+        if (name.length < 2) return show([])
+        try {
+            const r = await (await fetch(`https://geocoding-api.open-meteo.com/v1/search?count=10&language=en&format=json&name=${encodeURIComponent(name)}`)).json()
+            if (id === request && document.activeElement === input) show((r.results || []).filter(p => /^PPL/.test(p.feature_code)).slice(0, 5))
+        } catch (e) { if (id === request) show([]) }
+    }
+
+    input.addEventListener("input", () => {
+        form.set("weather_latitude", null)
+        form.set("weather_longitude", null)
+        clearTimeout(timer)
+        timer = setTimeout(search, 250)
     })
-    return el("div.stack",
-        field("weather_city", "City", textInput("weather_city", { placeholder: "Austin, TX", maxlength: 64, trim: true })),
-        code,
-        field("weather_units", "Units", segmented("weather_units", WEATHER_UNITS, { label: "Units" })))
+    input.addEventListener("keydown", e => {
+        if (list.hidden) return
+        if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); highlight(active + (e.key === "ArrowDown" ? 1 : -1)) }
+        else if (e.key === "Enter" && active >= 0) { e.preventDefault(); pick(places[active]) }
+        else if (e.key === "Escape") show([])
+    })
+    input.addEventListener("blur", () => show([]))
+
+    const locate = el("button.btn.icon", { type: "button", "aria-label": "Use my location", title: "Use my location", onclick: () => locateCity(locate.parentNode) }, icon("pin"))
+    return el("div.suggest-wrap", el("div.input-group", input, locate), list)
+}
+
+// The browser's location where the page is allowed to ask (HTTPS); over the clock's plain HTTP browsers refuse,
+// so the internet address gives an approximate city instead. Fills °F in the US and °C elsewhere. Done
+// automatically only while the city is still empty.
+function locateCity(wrap, { auto = false } = {}) {
+    const input = $("input", wrap)
+    const fill = async coords => {
+        try {
+            const q = coords ? `latitude=${coords.latitude}&longitude=${coords.longitude}&` : ""
+            const r = await (await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?${q}localityLanguage=en`)).json()
+            const name = r.city || r.locality
+            if (!name || !input.isConnected || (auto && form.get("weather_city"))) return
+            setCity(input, placeLabel(name, r.countryCode, r.principalSubdivision, r.countryName), r.latitude, r.longitude)
+            form.set("weather_units", r.countryCode === "US" ? "f" : "c")
+            ui.openDrawers.add("Weather")
+            rerenderTab("display")
+        } catch (e) { /* offline: leave the city as it is */ }
+    }
+    if (window.isSecureContext && navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(pos => fill(pos.coords), () => {}, { timeout: 10000, maximumAge: 600000 })
+    } else fill(null)
 }
 
 /**

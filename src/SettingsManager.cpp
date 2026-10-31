@@ -301,7 +301,8 @@ bool SettingsManager_::loadSettingsFromFile() {
 
     // Weather face
     settings.weather_city = (*doc)["weather_city"] | "";
-    settings.weather_code = (*doc)["weather_code"] | "";
+    settings.weather_latitude = (*doc)["weather_latitude"] | NAN;
+    settings.weather_longitude = (*doc)["weather_longitude"] | NAN;
     settings.weather_fahrenheit = (*doc)["weather_units"].as<String>() != "c";
 
     delete doc;

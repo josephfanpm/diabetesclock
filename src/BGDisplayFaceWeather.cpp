@@ -149,37 +149,33 @@ RenderDecision BGDisplayFaceWeather::getRenderDecision(const RenderContext& ctx)
     return RenderDecision::FULL;
 }
 
-// The configured code, or one made from the city: the initials of a name of three or more words
-// ("Salt Lake City" is SLC), otherwise its first three letters.
+// A code made from the city: the initials of a name of three or more words ("Salt Lake City" is
+// SLC), otherwise its first three letters.
 String BGDisplayFaceWeather::getCityCode() const {
-    String code = SettingsManager.settings.weather_code;
-    code.trim();
-    if (code.isEmpty()) {
-        String city = SettingsManager.settings.weather_city;
-        int comma = city.indexOf(',');
-        if (comma >= 0) {
-            city = city.substring(0, comma);
-        }
-        city.trim();
-
-        String initials;
-        String letters;
-        bool wordStart = true;
-        for (size_t i = 0; i < city.length(); i++) {
-            if (city[i] == ' ' || city[i] == '-') {
-                wordStart = true;
-                continue;
-            }
-            if (wordStart) {
-                initials += city[i];
-                wordStart = false;
-            }
-            if (isalpha(city[i])) {
-                letters += city[i];
-            }
-        }
-        code = initials.length() >= 3 ? initials : letters;
+    String city = SettingsManager.settings.weather_city;
+    int comma = city.indexOf(',');
+    if (comma >= 0) {
+        city = city.substring(0, comma);
     }
+    city.trim();
+
+    String initials;
+    String letters;
+    bool wordStart = true;
+    for (size_t i = 0; i < city.length(); i++) {
+        if (city[i] == ' ' || city[i] == '-') {
+            wordStart = true;
+            continue;
+        }
+        if (wordStart) {
+            initials += city[i];
+            wordStart = false;
+        }
+        if (isalpha(city[i])) {
+            letters += city[i];
+        }
+    }
+    String code = initials.length() >= 3 ? initials : letters;
     code = code.substring(0, 3);
     code.toUpperCase();
     return code;

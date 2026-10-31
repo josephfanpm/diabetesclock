@@ -121,9 +121,11 @@ public:
     int alarm_repeat_interval_seconds = 300;
     bool web_auth_enable;
     String web_auth_password;
-    // Weather face: the city to show, its three-letter code, and the temperature unit.
+    // Weather face: the city to show, its coordinates when picked from the settings page's
+    // suggestions (NAN when typed), and the temperature unit.
     String weather_city;
-    String weather_code;
+    float weather_latitude = NAN;
+    float weather_longitude = NAN;
     bool weather_fahrenheit = true;
 };
 

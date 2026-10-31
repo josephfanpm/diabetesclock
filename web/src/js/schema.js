@@ -378,7 +378,6 @@ function validateConfig(c, ctx) {
     }
     if (active.includes("weather")) {
         need("weather_city", text(c.weather_city).length >= 2 && text(c.weather_city).length <= 64, "Enter a city.")
-        need("weather_code", /^[A-Za-z]{0,3}$/.test(text(c.weather_code)), "Up to 3 letters.")
         need("weather_units", inOptions(c.weather_units, WEATHER_UNITS), "Choose °F or °C.")
     }
     need("tz", RX.timezone.test(text(c.tz_libc)) && (!ctx.tzNames || ctx.tzNames.has(c.tz)), "Please select your time zone.")
@@ -431,7 +430,10 @@ function normalizeLoaded(c) {
     const out = readFaceIds(clone(c))
     out.face_schedule ??= []
     out.weather_city ??= ""
-    out.weather_code ??= ""
+    // Coordinates of a city picked from the suggestions; null when typed, so the clock looks it up.
+    out.weather_latitude ??= null
+    out.weather_longitude ??= null
+    delete out.weather_code
     if (!inOptions(out.weather_units, WEATHER_UNITS)) out.weather_units = "f"
     /**
      * Convert one integer-string setting to a number in the copied configuration, leaving other values alone.

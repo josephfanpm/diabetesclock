@@ -124,8 +124,25 @@
             min-width: 0;
         }
 
-        #city { flex: 1 1 160px; }
-        #code { width: 72px; text-transform: uppercase; }
+        .suggest-wrap { position: relative; flex: 1 1 160px; display: flex; }
+        #city { flex: 1; }
+        .suggest {
+            position: absolute;
+            z-index: 5;
+            left: 0;
+            right: 0;
+            top: calc(100% + 4px);
+            margin: 0;
+            padding: 4px;
+            list-style: none;
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, .2);
+        }
+        .suggest li { display: flex; flex-wrap: wrap; gap: 0 8px; padding: 8px 10px; border-radius: 6px; cursor: pointer; }
+        .suggest li:hover, .suggest li[aria-selected="true"] { background: var(--chip); }
+        .suggest li span + span { color: var(--muted); }
 
         .status { color: var(--muted); font-size: .9rem; min-height: 1.3em; }
 
@@ -174,8 +191,11 @@
         <div class="controls" id="weather_controls" hidden>
             <div class="row">
                 <span class="label">City</span>
-                <input type="text" id="city" value="New York City" autocomplete="off" spellcheck="false" aria-label="City" />
-                <input type="text" id="code" maxlength="3" placeholder="NYC" autocomplete="off" spellcheck="false" aria-label="Code" />
+                <span class="suggest-wrap">
+                    <input type="text" id="city" value="New York City" autocomplete="off" spellcheck="false" aria-label="City"
+                        role="combobox" aria-autocomplete="list" aria-controls="city_list" aria-expanded="false" />
+                    <ul class="suggest" id="city_list" role="listbox" hidden></ul>
+                </span>
             </div>
             <div class="row"><span class="label">Units</span><span class="seg" data-key="weatherUnits"></span></div>
             <div class="row"><span class="label">Icon</span><span class="seg" data-key="icon"></span></div>
@@ -210,7 +230,7 @@
             timeFormat: "24",
             weatherUnits: "f",
             icon: null,
-            weather: { city: "New York City", code: "", coords: null, placeName: "", valid: false, temperature: 0, icon: "cloud" },
+            weather: { city: "New York City", coords: null, placeName: "", valid: false, temperature: 0, icon: "cloud" },
         }
 
         const OPTIONS = {
@@ -378,27 +398,78 @@
                     state.weatherUnits = r.countryCode === "US" ? "f" : "c"
                     renderControls()
                     document.getElementById("city").value = state.weather.city
-                    document.getElementById("code").placeholder = cityCode(state.weather.city, "") || "NYC"
                     loadWeather()
                 } catch (e) { /* keep New York City */ }
             }, () => { /* declined or unavailable: keep New York City */ }, { timeout: 10000, maximumAge: 600000 })
         }
 
-        let cityTimer
-        document.getElementById("city").addEventListener("input", e => {
+        // City suggestions from Open-Meteo's open-source geocoder, the same one the clock's settings page uses.
+        const cityInput = document.getElementById("city"), cityList = document.getElementById("city_list")
+        let cityTimer, places = [], activePlace = -1, suggestRequest = 0
+
+        function showPlaces(found) {
+            places = found
+            activePlace = -1
+            cityList.replaceChildren(...found.map((p, i) => {
+                const li = document.createElement("li")
+                li.id = `city_${i}`
+                li.setAttribute("role", "option")
+                for (const text of [p.name, [p.admin1, p.country].filter(Boolean).join(", ")]) {
+                    const span = document.createElement("span")
+                    span.textContent = text
+                    li.append(span)
+                }
+                li.addEventListener("pointerdown", e => { e.preventDefault(); pickPlace(p) })
+                return li
+            }))
+            cityList.hidden = !found.length
+            cityInput.setAttribute("aria-expanded", String(!cityList.hidden))
+            cityInput.removeAttribute("aria-activedescendant")
+        }
+
+        function highlightPlace(i) {
+            activePlace = (i + places.length) % places.length
+            cityList.querySelectorAll("li").forEach((li, j) => li.setAttribute("aria-selected", String(j === activePlace)))
+            cityInput.setAttribute("aria-activedescendant", `city_${activePlace}`)
+        }
+
+        // "Austin, TX" in the US, "London, United Kingdom" elsewhere.
+        function pickPlace(p) {
+            const stateCode = Object.keys(US_STATES).find(k => US_STATES[k] === String(p.admin1 || "").toLowerCase())
+            const region = p.country_code === "US" ? (stateCode || "").toUpperCase() || p.admin1 : p.country
+            state.weather.city = region ? `${p.name}, ${region}` : p.name
+            state.weather.coords = { latitude: p.latitude, longitude: p.longitude, name: p.name, admin1: p.admin1 }
+            cityInput.value = state.weather.city
+            showPlaces([])
+            clearTimeout(cityTimer)
+            loadWeather()
+        }
+
+        async function suggestPlaces() {
+            const name = cityInput.value.split(",")[0].trim()
+            const request = ++suggestRequest
+            if (name.length < 2) return showPlaces([])
+            try {
+                const r = await (await fetch(`https://geocoding-api.open-meteo.com/v1/search?count=10&language=en&format=json&name=${encodeURIComponent(name)}`)).json()
+                if (request === suggestRequest && document.activeElement === cityInput) showPlaces((r.results || []).filter(p => /^PPL/.test(p.feature_code)).slice(0, 5))
+            } catch (e) { if (request === suggestRequest) showPlaces([]) }
+        }
+
+        cityInput.addEventListener("input", e => {
             cityTyped = true
             state.weather.coords = null
             state.weather.city = e.target.value
-            document.getElementById("code").placeholder = cityCode(e.target.value, "") || "NYC"
             draw()
             clearTimeout(cityTimer)
-            cityTimer = setTimeout(loadWeather, 500)
+            cityTimer = setTimeout(() => { suggestPlaces(); loadWeather() }, 300)
         })
-        document.getElementById("code").addEventListener("input", e => {
-            state.weather.code = e.target.value.replace(/[^A-Za-z]/g, "")
-            e.target.value = state.weather.code.toUpperCase()
-            draw()
+        cityInput.addEventListener("keydown", e => {
+            if (cityList.hidden) return
+            if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); highlightPlace(activePlace + (e.key === "ArrowDown" ? 1 : -1)) }
+            else if (e.key === "Enter" && activePlace >= 0) { e.preventDefault(); pickPlace(places[activePlace]) }
+            else if (e.key === "Escape") showPlaces([])
         })
+        cityInput.addEventListener("blur", () => showPlaces([]))
 
         renderControls()
         draw()

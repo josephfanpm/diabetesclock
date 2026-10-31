@@ -45,9 +45,11 @@ Preview every face on the [install page](https://josephfanpm.github.io/diabetesc
 
 ### Weather
 
-Turn on the Weather face in the **Clock faces** card on the **Display** tab, then open its drawer and enter a city, for example `Austin, TX`. Adding a state, province or country after a comma picks between cities with the same name. The code defaults to the city's initials when the name has three or more words (Salt Lake City is SLC), otherwise its first three letters; type your own to change it. Choose °F or °C.
+Turn on the Weather face in the **Clock faces** card on the **Display** tab, then open its drawer. If the city is empty, the page fills in your location; the location button does it again. Or start typing a city and pick one from the suggestions. A typed city without a pick also works: adding a state, province or country after a comma, for example `Austin, TX`, picks between cities with the same name. The clock shows the city's initials when the name has three or more words (Salt Lake City is SLC), otherwise its first three letters. Choose °F or °C.
 
-Weather comes from [Open-Meteo](https://open-meteo.com/), which needs no account or key, and updates every 15 minutes.
+Suggestions and the location need internet on the phone or computer, so they don't work while it's joined to the clock's own `nsclock` network. Browsers only share your exact location with HTTPS pages, so the clock's settings page uses your internet address instead, which gives a nearby city.
+
+Weather and city suggestions come from [Open-Meteo](https://open-meteo.com/), which is open source and needs no account or key. Weather updates every 15 minutes.
 
 ### Choosing faces
 

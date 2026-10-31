@@ -80,6 +80,10 @@ input:disabled, select:disabled, button:disabled { opacity: .5; cursor: not-allo
 .input-group { display: flex; min-width: 0; }
 .input-group > input { border-top-right-radius: 0; border-bottom-right-radius: 0; }
 .input-group > .btn { border-top-left-radius: 0; border-bottom-left-radius: 0; margin-left: -1px; }
+.suggest-wrap { position: relative; min-width: 0; }
+.suggest { position: absolute; z-index: 5; left: 0; right: 0; top: calc(100% + 4px); margin: 0; padding: 4px; list-style: none; background: var(--surface-high); border: 1px solid var(--line-2); border-radius: var(--radius); box-shadow: 0 8px 24px rgba(0, 0, 0, .4); }
+.suggest li { display: flex; flex-wrap: wrap; gap: 0 8px; padding: 10px 12px; border-radius: 6px; cursor: pointer; }
+.suggest li:hover, .suggest li[aria-selected="true"] { background: var(--surface-top); }
 .unit { display: flex; align-items: center; gap: 8px; }
 .unit span { color: var(--muted); white-space: nowrap; }
 

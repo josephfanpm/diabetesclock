@@ -104,7 +104,14 @@ static bool isInRegion(JsonObject result, const String& region) {
 }
 
 bool WeatherManager_::locate() {
-    String city = SettingsManager.settings.weather_city;
+    const auto& settings = SettingsManager.settings;
+    if (!isnan(settings.weather_latitude) && !isnan(settings.weather_longitude)) {
+        latitude = settings.weather_latitude;
+        longitude = settings.weather_longitude;
+        return true;
+    }
+
+    String city = settings.weather_city;
     String region;
     int comma = city.indexOf(',');
     if (comma >= 0) {

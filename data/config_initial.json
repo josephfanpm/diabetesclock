@@ -93,6 +93,7 @@
     "web_auth_enable": false,
     "web_auth_password": "",
     "weather_city": "",
-    "weather_code": "",
+    "weather_latitude": null,
+    "weather_longitude": null,
     "weather_units": "f"
 }
