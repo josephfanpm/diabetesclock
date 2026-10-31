@@ -391,35 +391,50 @@ function setCity(input, name, latitude, longitude) {
     form.touch("weather_city")
 }
 
-// City suggestions from Open-Meteo's open-source geocoder, the same one the clock uses. Typing clears the saved
-// coordinates; picking a suggestion sets them. Without internet, as on the clock's own Wi-Fi, it stays a plain text box.
-function cityInput() {
-    const input = textInput("weather_city", { placeholder: "Austin, TX", maxlength: 64, trim: true })
-    const list = el("ul.suggest", { id: "weather_city_list", role: "listbox", hidden: true })
-    Object.entries({ role: "combobox", "aria-autocomplete": "list", "aria-controls": list.id, "aria-expanded": "false" })
+// A list of choices under a text box, picked by pointer or with the arrow keys and Enter. show() takes the
+// choices, or a message such as "Scanning…" to show in their place.
+function suggestList(input, id, row, pick) {
+    const list = el("ul.suggest", { id, role: "listbox", hidden: true })
+    Object.entries({ role: "combobox", "aria-autocomplete": "list", "aria-controls": id, "aria-expanded": "false" })
         .forEach(([k, v]) => input.setAttribute(k, v))
-    let places = [], active = -1, timer, request = 0
+    let items = [], active = -1
 
-    const show = found => {
-        places = found
+    const show = (found, message) => {
+        items = found
         active = -1
-        list.replaceChildren(...found.map((p, i) => el("li", {
-            role: "option", id: `weather_city_${i}`,
-            onpointerdown: e => { e.preventDefault(); pick(p) },
-        }, el("span", p.name), el("span.muted", [p.admin1, p.country].filter(Boolean).join(", ")))))
-        list.hidden = !found.length
+        list.replaceChildren(...(message ? [el("li.muted", message)] : found.map((item, i) => el("li", {
+            role: "option", id: `${id}_${i}`,
+            onpointerdown: e => { e.preventDefault(); show([]); pick(item) },
+        }, row(item)))))
+        list.hidden = !found.length && !message
         input.setAttribute("aria-expanded", String(!list.hidden))
         input.removeAttribute("aria-activedescendant")
     }
     const highlight = i => {
-        active = (i + places.length) % places.length
+        active = (i + items.length) % items.length
         $$("li", list).forEach((li, j) => li.setAttribute("aria-selected", String(j === active)))
-        input.setAttribute("aria-activedescendant", `weather_city_${active}`)
+        input.setAttribute("aria-activedescendant", `${id}_${active}`)
     }
-    const pick = p => {
-        setCity(input, placeLabel(p.name, p.country_code, p.admin1, p.country), p.latitude, p.longitude)
-        show([])
-    }
+    input.addEventListener("keydown", e => {
+        if (list.hidden) return
+        if (e.key === "Escape") show([])
+        else if (!items.length) return
+        else if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); highlight(active + (e.key === "ArrowDown" ? 1 : -1)) }
+        else if (e.key === "Enter" && active >= 0) { e.preventDefault(); const item = items[active]; show([]); pick(item) }
+    })
+    input.addEventListener("blur", () => show([]))
+    return { list, show }
+}
+
+// City suggestions from Open-Meteo's open-source geocoder, the same one the clock uses. Typing clears the saved
+// coordinates; picking a suggestion sets them. Without internet, as on the clock's own Wi-Fi, it stays a plain text box.
+function cityInput() {
+    const input = textInput("weather_city", { placeholder: "Austin, TX", maxlength: 64, trim: true })
+    const { list, show } = suggestList(input, "weather_city_list",
+        p => [el("span", p.name), el("span.muted", [p.admin1, p.country].filter(Boolean).join(", "))],
+        p => setCity(input, placeLabel(p.name, p.country_code, p.admin1, p.country), p.latitude, p.longitude))
+    let timer, request = 0
+
     const search = async () => {
         const name = input.value.split(",")[0].trim()
         const id = ++request
@@ -436,13 +451,6 @@ function cityInput() {
         clearTimeout(timer)
         timer = setTimeout(search, 250)
     })
-    input.addEventListener("keydown", e => {
-        if (list.hidden) return
-        if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); highlight(active + (e.key === "ArrowDown" ? 1 : -1)) }
-        else if (e.key === "Enter" && active >= 0) { e.preventDefault(); pick(places[active]) }
-        else if (e.key === "Escape") show([])
-    })
-    input.addEventListener("blur", () => show([]))
 
     const locate = el("button.btn.icon", { type: "button", "aria-label": "Use my location", title: "Use my location", onclick: () => locateCity(locate.parentNode) }, icon("pin"))
     return el("div.suggest-wrap", el("div.input-group", input, locate), list)
@@ -1028,7 +1036,9 @@ function wifiCard() {
     sync()
     return card("Wireless network", null, el("div.stack",
         el("div.grid",
-            field("ssid", "WiFi network name (SSID)", textInput("ssid", { maxlength: 32 })),
+            field("ssid", "WiFi network name (SSID)", ssidInput("ssid", n => {
+                if (open.checked !== n.open) { open.checked = n.open; open.dispatchEvent(new Event("change")) }
+            })),
             field("password", "WiFi password", pw)),
         el("label.check", open, "Open WiFi network (no password)"),
         warn,
@@ -1036,6 +1046,35 @@ function wifiCard() {
             textInput("custom_mac", { placeholder: "A4:83:E7:2B:10:9C", maxlength: 17, trim: true }),
             "If this network uses a captive portal that only lets known devices through, enter another device's MAC address here. Leave blank to use the clock's factory hardware MAC.")),
         { id: "card_wifi" })
+}
+
+// The WiFi name, with the networks the clock can see listed under it, strongest first. Typing filters the
+// list, and a hidden network can still be typed in full. The button scans again.
+function ssidInput(key, onPick) {
+    const input = textInput(key, { maxlength: 32 })
+    const { list, show } = suggestList(input, `${key}_list`,
+        n => [el("span", n.ssid), n.open ? el("span.muted", "Open") : null],
+        n => { input.value = n.ssid; form.set(key, n.ssid); form.touch(key); onPick(n) })
+    const showNetworks = filter => {
+        if (document.activeElement !== input) return
+        const q = filter ? input.value.trim().toLowerCase() : ""
+        const found = ui.wifiNetworks.filter(n => n.ssid.toLowerCase().includes(q))
+        show(found, ui.wifiNetworks.length ? null : "No networks found")
+    }
+    const scan = async () => {
+        show([], "Scanning…")
+        ui.wifiScan ??= api.wifiNetworks().catch(() => []).finally(() => { ui.wifiScan = null })
+        ui.wifiNetworks = await ui.wifiScan
+        showNetworks(false)
+    }
+    input.addEventListener("focus", () => ui.wifiNetworks ? showNetworks(false) : scan())
+    input.addEventListener("input", () => { if (ui.wifiNetworks) showNetworks(true) })
+    const rescan = el("button.btn.icon", {
+        type: "button", "aria-label": "Scan for networks", title: "Scan for networks",
+        onpointerdown: e => e.preventDefault(),
+        onclick: () => { input.focus(); scan() },
+    }, icon("wifi"))
+    return el("div.suggest-wrap", el("div.input-group", input, rescan), list)
 }
 
 /**
@@ -1052,7 +1091,9 @@ function extraWifiCard() {
             const known = type === "wpa_psk" || type === "wpa_eap"
             return el("div.grid",
                 field("additional_wifi_type", "WiFi type", selectInput("additional_wifi_type", WIFI_TYPES)),
-                known ? field("additional_ssid", "WiFi network name (SSID)", textInput("additional_ssid", { maxlength: 32 })) : null,
+                known ? field("additional_ssid", "WiFi network name (SSID)", ssidInput("additional_ssid", n => {
+                    if (n.enterprise !== (type === "wpa_eap")) form.set("additional_wifi_type", n.enterprise ? "wpa_eap" : "wpa_psk")
+                })) : null,
                 type === "wpa_eap" ? field("additional_wifi_username", "WiFi username", textInput("additional_wifi_username")) : null,
                 known ? field("additional_wifi_password", "WiFi password", textInput("additional_wifi_password", { type: "password", autocomplete: "new-password" })) : null)
         })), { id: "card_wifi2" })

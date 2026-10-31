@@ -469,6 +469,55 @@ void ServerManager_::setupWebServer(IPAddress ip) {
         SettingsManager.factoryReset();
     });
 
+    // Nearby WiFi networks for the settings page. The scan runs in the background: the first call starts
+    // it and answers 202, and the page asks again until the list arrives. Hidden networks are left out,
+    // and each name is listed once, with its strongest signal.
+    ws->on("/api/wifi/scan", HTTP_GET, [this](AsyncWebServerRequest* request) {
+        if (!enforceAuthentication(request)) {
+            return;
+        }
+        int found = WiFi.scanComplete();
+        if (found == WIFI_SCAN_FAILED) {
+            WiFi.scanNetworks(true);
+        }
+        if (found < 0) {
+            request->send(202, "application/json", "{\"status\": \"scanning\"}");
+            return;
+        }
+
+        JsonDocument doc;
+        JsonArray networks = doc["networks"].to<JsonArray>();
+        for (int i = 0; i < found; i++) {
+            String ssid = WiFi.SSID(i);
+            if (ssid.isEmpty()) {
+                continue;
+            }
+            JsonObject network;
+            for (JsonObject listed : networks) {
+                if (listed["ssid"] == ssid) {
+                    network = listed;
+                    break;
+                }
+            }
+            if (network.isNull()) {
+                network = networks.add<JsonObject>();
+                network["ssid"] = ssid;
+                network["rssi"] = -1000;
+            }
+            if (WiFi.RSSI(i) > network["rssi"].as<int>()) {
+                wifi_auth_mode_t auth = WiFi.encryptionType(i);
+                network["rssi"] = WiFi.RSSI(i);
+                network["open"] = auth == WIFI_AUTH_OPEN;
+                network["enterprise"] = auth == WIFI_AUTH_WPA2_ENTERPRISE;
+            }
+        }
+        WiFi.scanDelete();
+
+        String response;
+        serializeJson(doc, response);
+        request->send(200, "application/json", response);
+    });
+
     // api call which returns status (isConnected, internet is reacheable, is in AP mode, bg source type
     // and status)
     ws->on("/api/status", HTTP_GET, [this](AsyncWebServerRequest* request) {

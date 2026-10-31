@@ -263,6 +263,19 @@ const api = (() => {
      */
     const patients = () => request("GET", "/api/llu/patients")
     /**
+     * Ask the clock to scan for WiFi networks and wait for the list, strongest signal first.
+     * @returns {Promise<{ssid: string, rssi: number, open: boolean, enterprise: boolean}[]>}
+     */
+    async function wifiNetworks() {
+        for (let i = 0; i < 15; i++) {
+            const r = await request("GET", "/api/wifi/scan")
+            if (r.status === 200 && r.data && Array.isArray(r.data.networks)) return r.data.networks.sort((a, b) => b.rssi - a.rssi)
+            if (r.status !== 202) return []
+            await sleep(1000)
+        }
+        return []
+    }
+    /**
      * Request a clock restart; the connection may close before a response arrives.
      * @returns {Promise<ApiReply<ActionStatus>>}
      */
@@ -298,5 +311,5 @@ const api = (() => {
         })
     }
 
-    return { on: events.on, startStatus, saveSettings, authStatus, login, logout, loadConfig, version, downloadLogs, timezones, tryAlarm, patients }
+    return { on: events.on, startStatus, saveSettings, authStatus, login, logout, loadConfig, version, downloadLogs, timezones, tryAlarm, patients, wifiNetworks }
 })()

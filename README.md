@@ -25,7 +25,7 @@ Firmware that turns an Ulanzi TC001 pixel clock into a glucose display. It reads
 3. Connect it to your computer with the USB-C cable.
 4. Open the [install page](https://josephfanpm.github.io/diabetesclock/) in Chrome or Edge and follow the steps. If it fails, see the [troubleshooting guide](TROUBLESHOOTING.md#installation).
 5. On your phone, join the `nsclock` Wi-Fi network and open `http://192.168.4.1/`.
-6. Enter your Wi-Fi, your data source login, and your glucose limits, then select **Save and restart**.
+6. Pick your Wi-Fi from the list of networks the clock can see (or type a hidden one), enter its password, your data source login and your glucose limits, then select **Save and restart**.
 
 ## Update
 
