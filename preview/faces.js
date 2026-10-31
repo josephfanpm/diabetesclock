@@ -227,9 +227,8 @@ function weatherIcon(code, isDay) {
     return "cloud"
 }
 
-// The code defaults to the city's initials when it has three or more words, otherwise its first three letters.
-function cityCode(city, code) {
-    if (code && code.trim()) return code.trim().slice(0, 3).toUpperCase()
+// The city's initials when it has three or more words, otherwise its first three letters.
+function cityCode(city) {
     const name = String(city || "").split(",")[0].trim()
     const initials = name.split(/[\s-]+/).filter(Boolean).map(w => w[0]).join("")
     return (initials.length >= 3 ? initials : name.replace(/[^A-Za-z]/g, "")).slice(0, 3).toUpperCase()
@@ -237,7 +236,7 @@ function cityCode(city, code) {
 
 function faceWeather(m, ctx) {
     const w = ctx.weather
-    const code = cityCode(w.city, w.code)
+    const code = cityCode(w.city)
     printText(m, 0, 6, code, "left", COLOR.WHITE)
     const iconX = Math.max(12, textWidth(code))
     if (!w.valid) return printText(m, 33, 6, "--", "right", DATA_OLD_COLOR)
