@@ -35,8 +35,12 @@ private:
     BGSource* bgSource = nullptr;
     BG_SOURCE currentSourceType;
     unsigned long long lastPollEpoch = 0;
+    // Restart watchdog: the newest reading seen, and when it (or the boot) arrived.
+    unsigned long long newestReadingEpoch = 0;
+    unsigned long lastNewReadingMillis = 0;
+    void restartIfNoNewReadings();
 };
 
 extern BGSourceManager_& bgSourceManager;  // Declare extern variable
 
-#endif  // BGSOURCEMANAGER_H
+#endif  // BGSOURCEMANAGER_H

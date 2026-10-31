@@ -297,7 +297,7 @@ GlucoseReading BGSourceLibreLinkUp::getLibreLinkUpConnection() {
         DEBUG_PRINTF(
             "Failed to get connections from LibreLinkUp, non-zero status %s\n", response.c_str());
         status = "get_connections_failed";
-        DisplayManager.showFatalError("Failed to get connections from LibreLinkUp, please restart");
+        DisplayManager.showFatalError("Failed to get connections from LibreLinkUp, restarting");
     }
 
     int patientsCount = doc["data"].size();
@@ -535,7 +535,7 @@ std::list<GlucoseReading> BGSourceLibreLinkUp::getReadings(unsigned long long la
     if (doc["status"].as<int>() != 0) {
         DEBUG_PRINTF("Failed to get glucose from LibreLinkUp, non-zero status %s\n", response.c_str());
         status = "get_glucose_failed";
-        DisplayManager.showFatalError("Failed to get glucose from LibreLinkUp, please restart");
+        DisplayManager.showFatalError("Failed to get glucose from LibreLinkUp, restarting");
     }
     auto values = doc["data"]["graphData"].as<JsonArray>();
 #ifdef DEBUG_BG_SOURCE
