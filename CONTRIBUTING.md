@@ -33,7 +33,7 @@ My computer is running linux, but you can use Windows or MacOS as well, there ar
   - `ulanzi_debug` -> `General` -> `Upload and monitor`
 - If you are lucky enough, the clock should restart and run your local version of NSClock
 - You should be able to see the debug output in the VS Code terminal
-- If something goes wrong and you are stuck, feel free to start a [discussion](https://github.com/ktomy/nightscout-clock/discussions)
+- If something goes wrong and you are stuck, feel free to open an [issue](https://github.com/josephfanpm/diabetesclock/issues)
 
 ### Adding a clock face
 

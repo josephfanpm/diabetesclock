@@ -1,6 +1,6 @@
 # Troubleshooting
 
-If you are reading this page, something did not go as expected. Don't worry: most problems people report turn out to be a USB port, a cable, or the WiFi network, and can be fixed without any special tools. Below are the issues reported most often in [issues](https://github.com/ktomy/nightscout-clock/issues?q=is%3Aissue) and [discussions](https://github.com/ktomy/nightscout-clock/discussions), with what helped.
+If you are reading this page, something did not go as expected. Don't worry: most problems people report turn out to be a USB port, a cable, or the WiFi network, and can be fixed without any special tools. Below are the most common issues, with what helped.
 
 - [Installation](#installation)
 - [What the clock shows when it starts](#what-the-clock-shows-when-it-starts)
@@ -14,7 +14,7 @@ If you are reading this page, something did not go as expected. Don't worry: mos
 
 ### Where is the installation page?
 
-The installation page is [here](https://ktomy.github.io/nightscout-clock/). It uses Web Serial, so open it in **Chrome** or **Edge** on a computer. Firefox, Safari and phone browsers cannot talk to the clock over USB.
+The installation page is [here](https://josephfanpm.github.io/diabetesclock/). It uses Web Serial, so open it in **Chrome** or **Edge** on a computer. Firefox, Safari and phone browsers cannot talk to the clock over USB.
 
 ### The clock does not appear in the list
 
@@ -44,7 +44,7 @@ It is caused by an unreliable USB connection between the clock and the computer,
 4. **Try a different cable.** Prefer a short USB-A to USB-C cable, and avoid long cables and extensions.
 5. **Try a different computer.** For many people, the installation worked right away on another computer, often an older one.
 
-Holding the clock's buttons while installing does not affect the installation, so you can ignore the BOOT button hint. More reports and tips are collected in the discussion [Are you unable to install? Read this](https://github.com/ktomy/nightscout-clock/discussions/57); please add your experience there.
+Holding the clock's buttons while installing does not affect the installation, so you can ignore the BOOT button hint.
 
 If nothing works, the last resort is to set up the [development environment](CONTRIBUTING.md) and flash the clock with PlatformIO, whose `scripts/upload.sh --all` retries automatically.
 
@@ -118,7 +118,7 @@ When readings get old, the value is drawn in the **old-data color**, which is gr
 
 Apart from saving settings, the clock restarts by itself only after an error, which it scrolls on the display first. If it restarts unexpectedly, freezes, loses its settings, or shows `Error loading software, please reinstall` without an obvious reason:
 
-1. Make sure you run the [latest version](https://ktomy.github.io/nightscout-clock/), since many such problems have been fixed over time.
+1. Make sure you run the [latest version](https://josephfanpm.github.io/diabetesclock/), since many such problems have been fixed over time.
 2. Try a different power supply and cable. A weak USB charger can cause random restarts.
 3. If possible, try another WiFi network (for example your phone's hotspot) and another data source. This tells us whether the problem follows the network, the data source or the clock itself. Occasionally the clock's hardware is faulty.
 4. If the problem persists, [collect logs with the debug firmware](#collecting-logs-with-the-debug-firmware) and [report an issue](#reporting-an-issue). Without logs, intermittent problems are very hard to find.
@@ -133,7 +133,7 @@ Installing a different firmware resets the clock's settings. On the **WiFi & sys
 
 ### 2. Install the debug firmware
 
-Open the [debug installation page](https://ktomy.github.io/nightscout-clock/debug/) and install it the same way as the regular firmware. Then set up the clock again, or load your backup on the **WiFi & system** tab (check **Also load the WiFi settings**) and select **Save and restart**. Keep using the clock as usual until the problem happens again.
+Open the [debug installation page](https://josephfanpm.github.io/diabetesclock/debug/) and install it the same way as the regular firmware. Then set up the clock again, or load your backup on the **WiFi & system** tab (check **Also load the WiFi settings**) and select **Save and restart**. Keep using the clock as usual until the problem happens again.
 
 ### 3. Get the logs
 
@@ -141,7 +141,7 @@ There are two ways to get them. Use the first one for restarts and problems duri
 
 **With a computer connected (recommended).** This records everything, including what happens just before a restart:
 
-1. Connect the clock to the computer and open the [debug installation page](https://ktomy.github.io/nightscout-clock/debug/) in Chrome or Edge.
+1. Connect the clock to the computer and open the [debug installation page](https://josephfanpm.github.io/diabetesclock/debug/) in Chrome or Edge.
 2. Click **CONNECT**, select the clock, and choose **Logs & Console** instead of **Install**.
 3. Click **Reset Device** to restart the clock, so the log starts from the beginning.
 4. Wait until the problem happens. For intermittent problems, keep the page open for as long as needed, even overnight; make sure the computer doesn't go to sleep.
@@ -155,15 +155,14 @@ Logs can contain your WiFi and data source passwords, API secrets, session token
 
 ### 5. Go back to the regular firmware
 
-When you're done, install the regular firmware again from the [installation page](https://ktomy.github.io/nightscout-clock/) and restore your settings backup.
+When you're done, install the regular firmware again from the [installation page](https://josephfanpm.github.io/diabetesclock/) and restore your settings backup.
 
 ## Reporting an issue
 
-If this page did not help, please [create an issue](https://github.com/ktomy/nightscout-clock/issues/new/choose) and include:
+If this page did not help, please [create an issue](https://github.com/josephfanpm/diabetesclock/issues/new/choose) and include:
 
 - the firmware version (shown at startup and on the **WiFi & system** tab) and your data source (Nightscout, Dexcom, LibreLinkUp, Medtrum, ...)
 - what the clock shows, ideally with a photo or short video, and when the problem happens
 - what you already tried from this page
 - the **log file**, attached to the issue (drag it into the comment box), with private data removed as described [above](#4-remove-private-data)
 
-For questions and installation problems, you can also search and ask in [discussions](https://github.com/ktomy/nightscout-clock/discussions).

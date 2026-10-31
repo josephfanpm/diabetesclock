@@ -1,391 +1,81 @@
 # Diabetes Clock
 
-A fork of [Nightscout Clock](https://github.com/ktomy/nightscout-clock) by ktomy for the Ulanzi TC001 pixel clock. It shows glucose readings from Dexcom Share, Nightscout, LibreLink Up or Medtrum EasyFollow.
+Firmware that turns an Ulanzi TC001 pixel clock into a glucose display. It reads from Dexcom Share, Nightscout, LibreLink Up or Medtrum EasyFollow.
 
 **[Install and preview the clock faces](https://josephfanpm.github.io/diabetesclock/)**
 
 ### Current version: 1.1.2
 
-## What this fork changes
+## What it does
 
-- **Restarts itself when readings stop.** If no new reading arrives for 15 minutes, the clock restarts and signs in to the data source again, so you no longer have to restart it by hand. LibreLinkUp errors that used to say "please restart" now say "restarting" (the clock already restarts on its own after showing them).
-- **Five clock faces:** Glucose graph and value, Value and delta (the default), Current time and BG value, Time only, and Weather.
-- **Weather face.** Shows a three-letter code for a city you choose, a weather icon, and the current temperature in °F or °C. Weather comes from [Open-Meteo](https://open-meteo.com/), which needs no account or key, and updates every 15 minutes. Turn it on in the Clock faces card and enter the city, for example `Austin, TX`. The code defaults to the city's initials (three or more words) or its first three letters, and you can type your own.
-- **Face previews** on the [install page](https://josephfanpm.github.io/diabetesclock/), drawn from the firmware's own font and layouts.
+- Five clock faces: Glucose graph and value, Value and delta, Current time and BG value, Time only, and Weather
+- Restarts itself when readings stop: if no new reading arrives for 15 minutes, the clock restarts and signs in to the data source again
+- mg/dL and mmol/L
+- Configurable low and high limits, with a color for each range
+- Audible high, low and urgent-low alarms
+- Automatic brightness
+- Marks old readings with a configurable color, and a cross in place of the trend arrow
+- Daily face and brightness schedules, or automatic cycling through your faces
+- Offline settings page with backup and restore
 
-## What it can do
+## Install
 
-- Can get glucose data from Dexcom Share, Nightscout, LibreLink Up or Medtrum EasyFollow
-- Supports mg/dl and mmol/l
-- 10 minutes setup through web browser
-- Configurable low/high limits
-- Audible alarms in case the blood sugar is too low or too high
-- Automatic brightness adjustment
-- Marks stale readings with a configurable color and a cross instead of the trend arrow
-- Daily face and brightness schedules, or automatic cycling through your chosen faces
-- Offline configuration page with settings backup and restore
+1. Get an [Ulanzi TC001](https://www.ulanzi.com/products/ulanzi-pixel-smart-clock-2882) (about $50).
+2. Turn it on: hold `<` and `>` for a few seconds.
+3. Connect it to your computer with the USB-C cable.
+4. Open the [install page](https://josephfanpm.github.io/diabetesclock/) in Chrome or Edge and follow the steps. If it fails, see the [troubleshooting guide](TROUBLESHOOTING.md#installation).
+5. On your phone, join the `nsclock` Wi-Fi network and open `http://192.168.4.1/`.
+6. Enter your Wi-Fi, your data source login, and your glucose limits, then select **Save and restart**.
 
-### YouTube review
+## Update
 
-[![YouTube video](https://img.youtube.com/vi/7GmDflLxqLs/0.jpg)](https://www.youtube.com/watch?v=7GmDflLxqLs)
+Updating reinstalls the firmware and resets the clock's settings. First download a settings file from **Backup and restore** on the **WiFi & system** tab. After updating, load it on the same tab, review the settings, and select **Save and restart**. Include network settings to restore your Wi-Fi; the web login has to be set again.
 
-Thanks [@CallumMcK](https://github.com/CallumMcK)
+## Clock faces
 
-## How to install
+Preview every face on the [install page](https://josephfanpm.github.io/diabetesclock/).
 
-1. Buy [Ulanzi TC001](https://www.ulanzi.com/products/ulanzi-pixel-smart-clock-2882?aff=1191), it is about $50, so you don't have to sell a kidney, it is available both in US and Europe (Aliexpress sells it as well, for the same price)
-2. Wait a few days for the delivery
-3. Unpack, turn on (press on `<` and `>` buttons for a few seconds)
-4. Connect the USB-C cable (comes with the clock) to your computer
-5. Go to the [installation page](https://josephfanpm.github.io/diabetesclock/)
-6. Follow the instructions. If installation fails, see the [troubleshooting guide](TROUBLESHOOTING.md#installation) and the [installation troubleshooting discussion](https://github.com/ktomy/nightscout-clock/discussions/57).
-7. Once the clock is installed, take out your phone and join `nsclock` wi-fi network. Then go to `http://192.168.4.1/`
-8. Set up your device, provide the Wi-Fi network details, your Dexcom, Nightscout, LibreLink Up or Medtrum EasyFollow credentials, glucose warning limits and other parameters
-9. You're all set, enjoy!
+| Face | What it shows |
+| ---- | ------------- |
+| Glucose graph and value | A short glucose graph, the value, and trend dots on the right edge: 2 white dots for flat, white and green for 45°, 3 dots for straight up or down, 4 for double arrows; colored dots above mean rising, below mean falling. Bars under the value count the minutes since the last reading: green for 1–5, yellow from 6, and the old-data color once data is old. |
+| Value and delta | The value, the trend arrow, and the change since the previous reading. This is the default face. |
+| Current time and BG value | The time and the value, with the same trend dots. |
+| Time only | Only the time. Glucose is hidden, and new glucose alarms are paused while this face is selected. |
+| Weather | A three-letter city code, a weather icon, and the temperature. Off by default. Glucose alarms still sound on this face. |
 
-## How to update
+### Weather
 
-Updates use a full reflash and reset the clock's settings. Make a note of your settings before updating. If your installed version has **Backup and restore**, download a settings file first; after updating, load it on the **WiFi & system** tab, review the settings, and select **Save and restart**. Include network settings when restoring your WiFi connection; the web login must be configured separately.
+Turn on the Weather face in the **Clock faces** card on the **Display** tab, then open its drawer and enter a city, for example `Austin, TX`. Adding a state, province or country after a comma picks between cities with the same name. The code defaults to the city's initials when the name has three or more words (Salt Lake City is SLC), otherwise its first three letters; type your own to change it. Choose °F or °C.
 
-[![How to update Nightscout Clock](https://img.youtube.com/vi/7mFZJ7_EFN4/0.jpg)](https://www.youtube.com/watch?v=7mFZJ7_EFN4)
+Weather comes from [Open-Meteo](https://open-meteo.com/), which needs no account or key, and updates every 15 minutes.
 
-Thanks [@CallumMcK](https://github.com/CallumMcK)
+### Choosing faces
+
+The **Clock faces** card selects which faces are active. The left and right buttons move between active faces, and the default face is one of them. Automatic cycling runs through the active faces every 10 or 30 seconds, or every 1, 2, 3 or 5 minutes. The **Daily schedule** card can instead change the face and brightness at up to eight times a day. Cycling and the schedule can't both be on.
+
+## Settings page
+
+The settings page works offline, on a phone or a computer. Changes take effect when you select **Save and restart**.
+
+- **Display:** clock faces, weather, cycling or a daily schedule, brightness, old-data color, and time zone and format
+- **Glucose:** data source, units, range limits and colors
+- **Alarms:** high, low and urgent-low thresholds, sounds, snooze, alert windows by weekday and time, and repeat interval
+- **WiFi & system:** Wi-Fi and an optional second network, hostname, web login, firmware version, and settings backup and restore
+
+The settings file contains your Wi-Fi and data source passwords, so keep it private.
 
 ## Troubleshooting
 
-If the clock does not install, connect to WiFi, show data, or keeps restarting, see the [troubleshooting guide](TROUBLESHOOTING.md). It also explains how to collect logs with the debug firmware when reporting an issue.
+If the clock doesn't install, connect to Wi-Fi or show data, see the [troubleshooting guide](TROUBLESHOOTING.md). It also explains how to collect logs with the debug firmware.
 
-## More information
+## API data source
 
-Nightscout Clock is a custom firmware for Ulanzi TC001. It can also run (with minor changes) on AWTRIX-Light custom hardware, so if you need a bigger display, feel free to research.
+For testing, the clock can receive readings instead of fetching them. Select the API data source in the settings page, then POST Nightscout-style entries (`sgv`, `date`, and `trend` or `direction`) to `/api/v1/entries`. Send fewer than 10 entries at a time.
 
-### Clockfaces
+## Building
 
-| Name | Look | Comment |
-| ---- | ---- | ------- |
-| Glucose graph and value | <img width="500" alt="Graph and value" src="https://github.com/user-attachments/assets/db9046aa-5121-43fa-b367-807cdf3c5ef3" /> | The dots on the right side replace the trend arrow.<br>2 white dots = horizontal arrow.<br>2 colored dots (white + green) = 45° arrow.<br>3 dots = vertical arrow.<br>4 dots = double arrow.<br>Colored dots above = upward trend.<br>Colored dots below = downward trend.<br /><br />Bars under the value show the minutes since the last reading: 1..5 green, yellow from 6 minutes, and the old-data color once data is old. |
-| Value and delta | <img width="500" alt="Value and delta" src="https://github.com/user-attachments/assets/f8005f49-6e32-43f1-bd84-0bb4e4691d7f" /> | The value, the trend arrow, and the change since the previous reading. |
-| Current time and BG value | <img width="500" alt="Time and value" src="https://github.com/user-attachments/assets/cd72bf15-85e3-4621-b5ca-d639c1849cd5" /> | The time and the value, with trend dots as on Glucose graph and value. |
-| Time only | | Only the time. Glucose is hidden, and new glucose alarms are suppressed while this face is selected. |
-| Weather | | City code, weather icon, and temperature. Off by default; turn it on and set the city in the Clock faces card. Glucose alarms still sound on this face. |
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the PlatformIO setup and build scripts.
 
-#### Active clock faces
+## License
 
-The Web UI's Clock faces card selects which faces are active. All of them except Weather are active out of the box; turning off the ones you never use shortens what the left and right buttons move between, and the default face is chosen among the active ones.
-
-#### Automatic clock-face cycling
-
-Automatic cycling can be enabled in the same card, and runs through the active faces in the order shown, so at least two of them must be active. Choose how often the face should change: 10 or 30 seconds, or 1, 2, 3, or 5 minutes.
-
-While cycling is enabled, the left and right buttons restart the interval without stopping automatic cycling. The default-face setting is hidden until automatic cycling is turned off again.
-
-#### Face and brightness schedule
-
-The **Daily schedule** card on the **Display** tab can change the clock's face and brightness at up to eight times each day. Each row gives a time, an active face, and a manual brightness level or automatic mode. That selection lasts until the next row, including overnight. For example, use Big text in the morning and Simple at brightness 1 in the evening. The buttons still change the face between rows. Scheduling and automatic cycling cannot both be on; until the clock knows the time, it stays on its default face.
-
-### Configuration web interface
-
-The settings page works offline and adapts to desktop and phone screens. Four tabs group the controls; changes take effect when you select **Save and restart**. Use the pencil beside the heading to name your clock.
-
-The screenshots below show the 1.1 settings interface with sample data, captured before the version bump.
-
-#### Display
-
-Choose active clock faces, face-specific colors and animations, automatic cycling or a daily schedule, brightness, old-data behavior, and time settings.
-
-<img alt="Display tab: clock faces, daily schedule, brightness, old-data and time settings" src="docs/images/web-ui.png" />
-
-#### Glucose
-
-Connect your data source and configure glucose units, range limits, and colors.
-
-<img alt="Glucose tab: data source, glucose limits and range colors" src="docs/images/web-ui-glucose.png" />
-
-#### Alarms
-
-Configure high, low, and urgent-low alarms, including sounds, snooze durations, alert windows, and repeat behavior.
-
-<img alt="Alarms tab: high, low and urgent-low alarms and repeat settings" src="docs/images/web-ui-alarms.png" />
-
-#### WiFi & system
-
-Set up WiFi, an optional secondary network, a custom MAC address or hostname, and web login protection. This tab also shows the firmware version and provides settings backup and restore.
-
-<img alt="WiFi and system tab: network, authentication, backup and firmware settings" src="docs/images/web-ui-system.png" />
-
-The **Backup and restore** card downloads the clock's settings as a file and loads a file into the page for review before saving. WiFi settings are loaded only when requested; the web login is never imported. The file contains WiFi and data source passwords, so keep it private.
-
-### Alarm settings
-
-High, low, and urgent-low alarms each have their own threshold, snooze duration, sound, and optional alert windows in the Web UI.
-
-- Choose one or more alert windows by weekday and start/end time. With no windows, an enabled alarm can sound at any time. Windows use the clock's configured timezone; an overnight window starts on the selected weekday and continues into the next morning. If the clock has not obtained the time yet, it allows alarms regardless of their windows.
-- Set the repeat interval to 1, 2, or 5 minutes (default). Intensive mode overrides this and repeats every 2 seconds.
-- Choose the default sound, one of six sound presets, or a custom RTTTL melody. The **Try** button plays the current melody on the clock without saving, even if that alarm is disabled.
-
-### Features (technical stuff, feel free to ignore)
-
-- Web-based installation (no need to install flashing tools, you just need the clock and a web browser). The clock hosts a website where the user can configure all the parameters (data source, limits, alarms, display)
-  - Access-Point mode to set the initial configuration
-  - Support for a secondary WiFi (e.g. if you want to take the clock in your car for a long trip)
-  - Support for WPA-Enterprise
-  - Ability to set a custom hostname in case you have multiple NSClocks on the same network
-  - A name for each clock (such as Kitchen or Bedroom), set with the pencil beside the Web UI heading and shown as the page heading and browser tab title
-- Simple glucose value display with trend arrow
-- Changing color based on limits. Each glucose range's color (red, yellow, green, yellow, red by default) can be changed next to its limit in the Web UI, and every face follows it
-- Nightscout data source, the clock gets units type and value boundaries from Nightscout (see [how to](https://youtu.be/GGiep2gdx_o) set up using [Nightscout.pro](https://www.nightscout.pro/) as data source)
-- [Juggluco](https://www.juggluco.nl/) data source (support for HTTP Nightscout endpoints)
-- [Improv Wi-Fi](https://github.com/improv-wifi) compatibility (setting up WiFi during the installation)
-- [Gluroo](https://gluroo.com/) data source (API_SECRET within the URL parameters) (see how to setup [video](https://youtu.be/unG-l6XXWxw))
-- Simplified Nightscout API like xDrip+ [Open Web Service](https://github.com/NightscoutFoundation/xDrip/blob/master/Documentation/technical/Local_Web_Services.md) support. When adding it as a data source, choose Nightscout and check the `Simplified API` checkbox. Make sure your source device (e.g. your phone running xDrip) has a static IP address and is on the same WiFi network. Also don't forget to check the port setting; for xDrip it is usually `17580`
-- Dexcom Share data source
-- LibreLinkUp (libreview) data source
-- Medtrum EasyFollow data source
-- Medtronic users can bridge data through xDrip+ to Nightscout, then connect the clock to that Nightscout site. See [discussion #53](https://github.com/ktomy/nightscout-clock/discussions/53)
-- Brightness adjustment
-  - Brightness can be adjusted within the Web UI
-  - Automatic brightness adjustment based on the ambient light
-  - A single press of the middle button steps through brightness levels 1 to 10 and the automatic modes, showing the level for a moment; the change lasts until the clock restarts, and a long press restores the brightness set in the Web UI
-  - Double-click on the middle button on the clock turns the display on and off
-- Multiple clock faces support
-  - Default clock face can be selected in the Web UI
-  - Clock faces can be changed using arrow buttons on the clock
-  - Faces you do not use can be turned off in the Web UI
-  - Active clock faces can cycle automatically at a configurable interval
-  - Face and brightness can follow a daily schedule
-  - Graph, value and trend indicator
-  - Value, trend and delta
-  - Clock and BG value (timezone is set in the clock's web interface)
-  - Time only, always hiding glucose and suppressing new alarms while selected; already-triggered alarms continue normally
-  - Weather: city code, weather icon and temperature from Open-Meteo, off by default
-- Configurable color for old readings and no-data screens: gray (default), cyan, magenta, or blue. Choose it on the Display tab of the Web UI; the alternatives help keep stale readings visible at low brightness
-- Smart data and screen update timings: read data once it appears, refresh screen when needed
-- API data source. The clock has a simple Nightscout-like API which can receive glucose values from an external source. The main purpose of this feature is the ability to test the clock during the clockfaces development. In order to activate this feature, select the API data source within the clock's Web UI. Here are the endpoints:
-  - /api/v1/entries POST endpoint receives an array of Nightscout-like entries. The only significant fields are `sgv`, `date` and `trend` or `direction`. Due to the limited memory the API is stable when sent fewer than 10 records
-  - /api/v1/entries DELETE endpoint deletes all entries regardless of the payload
-- Firmware versioning
-- Debug firmware keeps a log of recent debug messages that can be downloaded from the Debug logs card on the WiFi & system tab, so a clock can be diagnosed without a computer attached. The log can contain passwords, API secrets and glucose readings, so review it before sharing
-- Alarms with configurable thresholds, snooze times, repeat interval, sounds, and weekday/time alert windows
-- To turn the device on or off press both arrow buttons for 3 seconds
-- To reset the device to factory defaults (hard reset) during boot sequence (when version number is displayed) keep the center (select) button pressed.
-
-### My TODO list
-
-- Add more clock faces
-  - Humidity and temperature
-- Smooth color change (rainbow) based on the value and boundaries
-- Add more data sources
-  - ...more... (if you are the author of a CGM data collecting app/service and you want your data to be displayed on the Nightscout Clock, please contact me)
-
-## Changes
-
-### 1.1.2
-
-- Attempted to fix LibreLinkUp still failing at start with "Error getting connections from LibreLinkUp: -11" for some users after 1.1.1; the login now closes its connection before the next request, thanks [@nishanm](https://github.com/nishanm) ([#259](https://github.com/ktomy/nightscout-clock/pull/259))
-
-### 1.1.1
-
-- Fixed LibreLinkUp failing right after login with "Error getting connections from LibreLinkUp: -11" for some users; each request now opens its own connection, thanks [@nishanm](https://github.com/nishanm) ([#258](https://github.com/ktomy/nightscout-clock/pull/258))
-- Fixed a clock updated from 1.0.0 forgetting its default face, switched-off faces and scheduled faces; settings files saved from 1.0.0 now load them too, thanks [@nishanm](https://github.com/nishanm) ([#254](https://github.com/ktomy/nightscout-clock/pull/254))
-- Fixed the settings page moving the clock to the phone's time zone when opened from a device in another zone, thanks [@nishanm](https://github.com/nishanm) ([#256](https://github.com/ktomy/nightscout-clock/pull/256))
-- The settings page now refuses glucose limits that are out of order, which made in-range readings show as low, thanks [@nishanm](https://github.com/nishanm) ([#255](https://github.com/ktomy/nightscout-clock/pull/255))
-- Kept the glucose state visible: Big text keeps the urgent color while a reading is late, the Unicorn mane keeps its warning and urgent colors at the lowest brightness, and the dark faces' number color is limited to white, cyan, blue or magenta, different from the range colors, thanks [@nishanm](https://github.com/nishanm) ([#257](https://github.com/ktomy/nightscout-clock/pull/257))
-
-### 1.1.0
-
-- Added the Rainbow clock face, showing the time in moving rainbow colors; like Time only, it hides glucose and suppresses new alarms while selected, thanks [@adamecker](https://github.com/adamecker) ([#241](https://github.com/ktomy/nightscout-clock/pull/241))
-- Added the Rainbow big text face, with every large digit in a moving rainbow and the trend arrow in the glucose range color, thanks [@adamecker](https://github.com/adamecker) ([#242](https://github.com/ktomy/nightscout-clock/pull/242))
-- Added the Rainbow mood face, with a smiley whose expression and color follow the glucose range beside the value in rainbow digits, thanks [@adamecker](https://github.com/adamecker) ([#243](https://github.com/ktomy/nightscout-clock/pull/243))
-- Added the Battery and uptime face, showing the battery level and the time since start; it is off by default, thanks [@adamecker](https://github.com/adamecker) ([#248](https://github.com/ktomy/nightscout-clock/pull/248))
-- Added age dots under the trend arrow to Big text (on by default) and Big text (dark) (off by default), thanks [@adamecker](https://github.com/adamecker) ([#245](https://github.com/ktomy/nightscout-clock/pull/245))
-- Added middle-button brightness control: a single press steps through levels 1 to 10 and the automatic modes until the next restart, and a long press restores the saved brightness; also fixed the display staying dark after turning it off and on in manual brightness mode, thanks [@adamecker](https://github.com/adamecker) ([#219](https://github.com/ktomy/nightscout-clock/pull/219))
-- Added a downloadable debug log to debug firmware, available from the Debug logs card on the WiFi & system tab, thanks [@adamecker](https://github.com/adamecker) ([#240](https://github.com/ktomy/nightscout-clock/pull/240))
-- Fixed LibreLinkUp logins that require accepting updated terms of use; the clock now accepts the step and logs in again instead of showing a credentials error, thanks [@waldokilian2](https://github.com/waldokilian2) ([#237](https://github.com/ktomy/nightscout-clock/pull/237))
-- Fixed repeated LibreLinkUp connection failures quickly leading to a fatal error and restart, thanks [@nishanm](https://github.com/nishanm) ([#247](https://github.com/ktomy/nightscout-clock/pull/247))
-- Made the settings page load faster by checking internet reachability at most once a minute, thanks [@adamecker](https://github.com/adamecker) ([#234](https://github.com/ktomy/nightscout-clock/pull/234))
-- Fixed the settings page keeping a scheduled time whose face the clock does not have, thanks [@nishanm](https://github.com/nishanm) ([#211](https://github.com/ktomy/nightscout-clock/pull/211))
-- Switched clock faces to stable IDs, so new faces no longer compete for ID numbers ([#244](https://github.com/ktomy/nightscout-clock/pull/244))
-- Fixed the build and release pipelines on the current GitHub runners
-
-### 1.0.0
-
-- Rebuilt the configuration page as a self-contained, offline UI with Display, Glucose, Alarms, and WiFi & system tabs, responsive layouts, and unsaved-change indicators; removed Bootstrap and jQuery dependencies, thanks [@nishanm](https://github.com/nishanm) ([#192](https://github.com/ktomy/nightscout-clock/pull/192))
-- Added settings backup and restore: download a configuration file, load it for review, optionally include network settings, and save when ready; web login settings are never imported, thanks [@nishanm](https://github.com/nishanm) ([#197](https://github.com/ktomy/nightscout-clock/pull/197))
-- Added daily face and brightness schedules with up to eight changes per day, including overnight use, thanks [@nishanm](https://github.com/nishanm) ([#190](https://github.com/ktomy/nightscout-clock/pull/190))
-- Added active-face selection for button navigation, automatic cycling, default-face selection, and scheduling, thanks [@nishanm](https://github.com/nishanm) ([#195](https://github.com/ktomy/nightscout-clock/pull/195))
-- Added the Time only face, which hides glucose and suppresses new alarms while selected; already-triggered and snoozed alarms continue normally, thanks [@nishanm](https://github.com/nishanm) ([#193](https://github.com/ktomy/nightscout-clock/pull/193))
-- Added Simple (dark) and Big text (dark), sharing a configurable number color while retaining glucose-colored trend arrows and urgent/old-data colors, thanks [@nishanm](https://github.com/nishanm) ([#191](https://github.com/ktomy/nightscout-clock/pull/191), [#200](https://github.com/ktomy/nightscout-clock/pull/200))
-- Added the Race car face with animated speed lines, road, and wheels, selectable animation speeds, and a stopped, faded scene for stale readings, thanks [@nishanm](https://github.com/nishanm) ([#203](https://github.com/ktomy/nightscout-clock/pull/203))
-- Added the Dragon face with animated flames, selectable animation speeds, and extinguished fire for stale readings, bringing the total to 12 clock faces, thanks [@nishanm](https://github.com/nishanm) ([#202](https://github.com/ktomy/nightscout-clock/pull/202))
-- Redrew the Unicorn and added optional mane animation, motion styles, speeds, and twinkling; the mane stops when readings become stale, thanks [@nishanm](https://github.com/nishanm) ([#201](https://github.com/ktomy/nightscout-clock/pull/201))
-- Added configurable colors for all five glucose ranges, used throughout the clock faces and graphs, thanks [@nishanm](https://github.com/nishanm) ([#199](https://github.com/ktomy/nightscout-clock/pull/199))
-- Added an optional early-stale color to Big text for readings 6, 10, or 15 minutes old; the old-data color takes precedence at the configured old-data threshold, thanks [@nishanm](https://github.com/nishanm) ([#178](https://github.com/ktomy/nightscout-clock/pull/178))
-- Replaced stale trend arrows with a cross in the old-data color, thanks [@nishanm](https://github.com/nishanm) ([#194](https://github.com/ktomy/nightscout-clock/pull/194))
-- Added editable clock names, shown in the settings heading and browser tab, thanks [@nishanm](https://github.com/nishanm) ([#196](https://github.com/ktomy/nightscout-clock/pull/196))
-- Added an optional custom WiFi MAC address, thanks [@adamecker](https://github.com/adamecker) ([#224](https://github.com/ktomy/nightscout-clock/pull/224))
-- Fixed fatal-error messages being invisible at minimum brightness or using the large-digit font, thanks [@nishanm](https://github.com/nishanm) ([#207](https://github.com/ktomy/nightscout-clock/pull/207))
-- Moved web UI sources to `web/src/` and generated compressed assets during filesystem builds, thanks [@nishanm](https://github.com/nishanm) ([#192](https://github.com/ktomy/nightscout-clock/pull/192))
-- Added reproducible screenshots for every settings tab
-
-### 0.31
-
-- Added the Unicorn clock face, showing glucose beside a unicorn whose mane changes color with glucose limits, thanks [@JuanMiste](https://github.com/JuanMiste) ([#181](https://github.com/ktomy/nightscout-clock/pull/181))
-- Added configurable colors for old readings and no-data screens, with gray, cyan, magenta, and blue options, thanks [@nishanm](https://github.com/nishanm) ([#177](https://github.com/ktomy/nightscout-clock/pull/177))
-- Replaced fixed alarm silence intervals with per-alarm alert windows supporting weekday selection, multiple windows, and overnight schedules, thanks [@nishanm](https://github.com/nishanm) ([#183](https://github.com/ktomy/nightscout-clock/pull/183))
-- Added a configurable alarm repeat interval of 1, 2, or 5 minutes; intensive mode still repeats every 2 seconds, thanks [@nishanm](https://github.com/nishanm) ([#184](https://github.com/ktomy/nightscout-clock/pull/184))
-- Added six alarm sound presets alongside the default and custom RTTTL melodies, thanks [@nishanm](https://github.com/nishanm) ([#185](https://github.com/ktomy/nightscout-clock/pull/185))
-- Improved Dexcom credential guidance and added password-manager autocomplete hints, thanks [@miqcie](https://github.com/miqcie) ([#154](https://github.com/ktomy/nightscout-clock/pull/154))
-- Fixed oversized no-data text and clock rendering after switching from a face that uses large text, thanks [@nishanm](https://github.com/nishanm) ([#177](https://github.com/ktomy/nightscout-clock/pull/177))
-- Centralized clock face definitions to simplify adding new faces, thanks [@nishanm](https://github.com/nishanm) ([#188](https://github.com/ktomy/nightscout-clock/pull/188))
-
-### 0.30
-
-- Added automatic cycling between selected clock faces, with Web UI validation requiring at least two faces, configurable intervals from 10 seconds to 5 minutes, and left/right navigation limited to the selected faces
-
-### 0.29.1
-
-- Addressed screen refresh, now there should be less flickering due to partial refresh
-- Fixed a potential issue in Improv protocol handling (setting wifi from the installation page)
-- Fixed a potential filesystem corruption on restarts
-
-### 0.29
-
-- Added Medtronic setup guidance to the WebUI, closes [#147](https://github.com/ktomy/nightscout-clock/issues/147)
-- Added web auth in the advanced settings. ([discussion](https://github.com/ktomy/nightscout-clock/issues/72)), thank you [@mrendo](https://github.com/mrendo)
-- Added show password option on all password fields, thank you [@mrendo](https://github.com/mrendo)
-- Fixed local WebUI password visibility icons after the changes from [#125](https://github.com/ktomy/nightscout-clock/pull/125)
-
-### 0.28
-
-- Fixed email parsing Medtrum credentials input, thanks [@logicafuzzy](https://github.com/logicafuzzy), merged [#127](https://github.com/ktomy/nightscout-clock/pull/127)
-- Added support for xDrip+ [Open Web Service](https://github.com/NightscoutFoundation/xDrip/blob/master/Documentation/technical/Local_Web_Services.md) as an extension of the Nightscout data source, resolving [#86](https://github.com/ktomy/nightscout-clock/discussions/86)
-
-### 0.27
-
-- Medtrum EasyFollow data source support ([discussion](https://github.com/ktomy/nightscout-clock/discussions/106)), inspired by [@pachi81](https://github.com/pachi81)'s work
-- Fixed Open WiFi networks validation
-- Moved trend indicator to the right in the "Time and value" clockface
-
-### 0.26.2
-
-- Implemented LibreLink Up patient selection for multi-patient accounts. Fixed [#65](https://github.com/ktomy/nightscout-clock/issues/65)
-
-### 0.26.1
-
-- Fixed a typo in the WebUI javascript
-
-### 0.26.0
-
-- Added trend indicator to the clock-and-value clock face. [#49](https://github.com/ktomy/nightscout-clock/issues/49)
-- Added manual brightness control from the device itself. When the brightness is in manual mode, pressing `<` or `>` for more than a second increases or decreases brightness. Setting persists over restarts. [#74](https://github.com/ktomy/nightscout-clock/issues/74)
-
-### 0.25.2
-
-- Fixed support for Dexcom Japan
-- Added custom alarm melodies, which can be set through RTTTL strings in alarm settings
-
-### 0.25.1
-
-- Added support for Dexcom Japan: [#110](https://github.com/ktomy/nightscout-clock/discussions/110)
-- Fixed typo in Dexcom credentials error message: [#111](https://github.com/ktomy/nightscout-clock/issues/111)
-
-### 0.25.0
-
-- Implemented Alarm Intensive Mode, addressing [#61](https://github.com/ktomy/nightscout-clock/discussions/61)
-
-### 0.24.4
-
-- Fixed WiFi password validation for Open WiFi networks
-- Added possibility of factory resetting the device on start-up (when version string is displaying press the select button)
-- Better AP mode handling
-
-### 0.24.3
-
-- Implemented open WiFi connectivity, closing [#105](https://github.com/ktomy/nightscout-clock/issues/105)
-- Changed age bars colors so that they do not disappear when the brightness is minimal. [#101](https://github.com/ktomy/nightscout-clock/discussions/101)
-
-### 0.24.2
-
-- Increased version presented to LibreLinkUp servers, closing [#88](https://github.com/ktomy/nightscout-clock/issues/88)
-
-### 0.24
-
-- Added "dark rooms" brightness mode and changed curve for the manual brightness. Thanks [@unxmaal](https://github.com/unxmaal) for [#67](https://github.com/ktomy/nightscout-clock/pull/67)
-
-### 0.23.1
-
-- Fixed trend arrow display on the Big Text clockface when brightness is not in auto mode. [#47](https://github.com/ktomy/nightscout-clock/issues/47)
-- Adjusted version display on start-up
-
-### 0.23
-
-- Added version number, update check and link to the updating page to the WebUI. [#10](https://github.com/ktomy/nightscout-clock/issues/10)
-- Added development environment setup instructions. [#26](https://github.com/ktomy/nightscout-clock/issues/26)
-- Fixed LibreLink Up Server label. [#50](https://github.com/ktomy/nightscout-clock/issues/50)
-
-### 0.22
-
-- Fixed delta for LibreLinkUp source
-- Now I can consider LibreLinkUp as being functioning. So closing [#9](https://github.com/ktomy/nightscout-clock/issues/9) and [#27](https://github.com/ktomy/nightscout-clock/issues/27)
-
-### 0.21
-
-- Yet another attempt to fix LibreLinkUp
-
-### 0.20
-
-- Another attempt to get values from LibreLinkUp
-
-### 0.19
-
-- Added custom "Data is old" threshold, (thanks [@TheBeardedTechGuy](https://github.com/TheBeardedTechGuy) for [#43](https://github.com/ktomy/nightscout-clock/pull/43))
-- Added glucose age display as bars in the bottom part of most of the clockfaces (thanks [@TheBeardedTechGuy](https://github.com/TheBeardedTechGuy) for [#41](https://github.com/ktomy/nightscout-clock/pull/41))
-
-### 0.18
-
-- Fixed Nightscout domain name validation, closed [#39](https://github.com/ktomy/nightscout-clock/issues/39)
-
-### 0.17
-
-- Added API endpoint to switch display power on and off as in the example below
-
-```
-curl -X POST http://nsclock.lan/api/displaypower \
-  -H "Content-Type: application/json" \
-  -d '{"power": "off"}'
-```
-
-### 0.16
-
-- Another attempt to fix [#25](https://github.com/ktomy/nightscout-clock/issues/25) and [#31](https://github.com/ktomy/nightscout-clock/issues/31)
-
-### 0.15
-
-- Fixed delta showing 0 when there are multiple sources uploading data to Nightscout. [#25](https://github.com/ktomy/nightscout-clock/issues/25)
-- Implemented WPA-Enterprise connectivity (Wifi type selector available for additional WiFi network). [#23](https://github.com/ktomy/nightscout-clock/issues/23)
-- Fixed project dependencies divergence. [#30](https://github.com/ktomy/nightscout-clock/issues/30)
-- Implemented possibility of setting custom hostname. [#18](https://github.com/ktomy/nightscout-clock/issues/18)
-- Implementing possibility of having additional WiFi network. [#7](https://github.com/ktomy/nightscout-clock/issues/7)
-
-### 0.14
-
-- Updated README to be more customer-friendly
-- Started preparing for LibreLink Up data source integration, [#9](https://github.com/ktomy/nightscout-clock/issues/9))
-- Improved memory management to avoid NOMEMORY issues and unplanned restarts, [#19](https://github.com/ktomy/nightscout-clock/issues/19)
-- Improved WiFi SSID validation, [#16](https://github.com/ktomy/nightscout-clock/issues/16)
-- Fixed typos in Web UI (thanks @motinis)
-
-### 0.13
-
-- Finished alarms feature
-- Improved WiFi reconnection handling [#15](https://github.com/ktomy/nightscout-clock/issues/15)
-- Migrated development environment to Linux
-- Removed boot sound
-
-## Do you want to contribute?
-
-Please read the [Contriburing](https://github.com/ktomy/nightscout-clock/blob/main/CONTRIBUTING.md) instructions
-
----
-
-The code is heavily inspired by (has a lot of copy-pasted code from :D ) [AWTRIX Light](https://github.com/Blueforcer/awtrix-light) project.
+[LGPL-2.1](LICENSE). Not a medical device: always confirm readings with your CGM app or meter.

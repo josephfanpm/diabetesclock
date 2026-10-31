@@ -569,8 +569,7 @@ function sourceCard() {
             field("medtrum_email", "Medtrum email", textInput("medtrum_email", { type: "email", autocomplete: "username" })),
             field("medtrum_password", "Medtrum password", textInput("medtrum_password", { type: "password", autocomplete: "current-password" }))))
         if (src === "carelink") parts.push(el("div.notice.info",
-            "Medtronic CareLink is not configured directly on the clock. Install xDrip+ on the phone connected to the sensor, connect xDrip+ to a Nightscout site, then connect the clock to that same Nightscout site by selecting the Nightscout source here. More details: ",
-            el("a", { href: "https://github.com/ktomy/nightscout-clock/discussions/53", target: "_blank", rel: "noopener noreferrer" }, "GitHub discussion #53"), "."))
+            "Medtronic CareLink is not configured directly on the clock. Install xDrip+ on the phone connected to the sensor, connect xDrip+ to a Nightscout site, then connect the clock to that same Nightscout site by selecting the Nightscout source here."))
         if (src === "api") parts.push(el("div.notice.info", "Send readings to the clock with POST ", el("code", `${location.origin}/api/v1/entries`), " (see the project documentation)."))
         return el("div.stack", ...parts)
     })
@@ -1012,7 +1011,7 @@ async function downloadSettings() {
     if (r.status === 401) return
     if (!r.ok) return toast(r.error ? r.error.message : `The clock answered ${r.status}.`, "bad")
     const url = URL.createObjectURL(new Blob([JSON.stringify(r.data, null, 2)], { type: "application/json" }))
-    const link = el("a", { href: url, download: "nightscout-clock-settings.json", hidden: true })
+    const link = el("a", { href: url, download: "diabetes-clock-settings.json", hidden: true })
     document.body.append(link)
     link.click()
     link.remove()
@@ -1072,7 +1071,7 @@ async function downloadDebugLogs() {
     catch (e) { return toast(e.message || "Could not download the logs.", "bad") }
     if (!text) return toast(`This firmware keeps no log. Install the debug firmware from ${DEBUG_FIRMWARE_URL} to record one.`, "warn", 8000)
     const url = URL.createObjectURL(new Blob([text], { type: "text/plain" }))
-    const link = el("a", { href: url, download: "nightscout-clock-logs.txt", hidden: true })
+    const link = el("a", { href: url, download: "diabetes-clock-logs.txt", hidden: true })
     document.body.append(link)
     link.click()
     link.remove()
