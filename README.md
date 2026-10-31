@@ -1,29 +1,20 @@
-# Nightscout Clock
+# Diabetes Clock
 
-![Nightscout clock logo](https://github.com/ktomy/nightscout-clock/assets/1446257/1198c06d-b017-409d-aca3-2bca63581ecb)
+A fork of [Nightscout Clock](https://github.com/ktomy/nightscout-clock) by ktomy for the Ulanzi TC001 pixel clock. It shows glucose readings from Dexcom Share, Nightscout, LibreLink Up or Medtrum EasyFollow.
 
-> [!IMPORTANT]
-> ## This project is looking for a new maintainer or co-maintainer
->
-> Over the past few months, I have not been able to spend as much time as this project deserves on support, maintenance, and development.
->
-> Rather than let the project stall, I would like to find someone who is interested in helping maintain it, either together with me or as the new primary maintainer.
->
-> If you use Nightscout Clock, have contributed before, or are interested in supporting an open-source project that helps caregivers monitor their loved ones’ glucose values, please get in touch.
->
-> You can reach me at **artiom@gmail.com**.
+**[Install and preview the clock faces](https://josephfanpm.github.io/diabetesclock/)**
 
 ### Current version: 1.1.2
 
-![Build and Release](https://github.com/ktomy/nightscout-clock/actions/workflows/build_release.yml/badge.svg)
+## What this fork changes
 
-_Nightscout Clock (or NSClock) is an open-source product aimed at helping caregivers of people with type 1 diabetes have peace of mind by being able to better monitor their loved ones' blood glucose values._
+- **Restarts itself when readings stop.** If no new reading arrives for 15 minutes, the clock restarts and signs in to the data source again, so you no longer have to restart it by hand. LibreLinkUp errors that used to say "please restart" now say "restarting" (the clock already restarts on its own after showing them).
+- **Five clock faces:** Glucose graph and value, Value and delta (the default), Current time and BG value, Time only, and Weather.
+- **Weather face.** Shows a three-letter code for a city you choose, a weather icon, and the current temperature in °F or °C. Weather comes from [Open-Meteo](https://open-meteo.com/), which needs no account or key, and updates every 15 minutes. Turn it on in the Clock faces card and enter the city, for example `Austin, TX`. The code defaults to the city's initials (three or more words) or its first three letters, and you can type your own.
+- **Face previews** on the [install page](https://josephfanpm.github.io/diabetesclock/), drawn from the firmware's own font and layouts.
 
-<img width="500" alt="Photo of the Nightscout Clock" src="https://github.com/user-attachments/assets/f8005f49-6e32-43f1-bd84-0bb4e4691d7f" />
+## What it can do
 
-## Here is what it can do
-
-- 16 clock faces, including animated characters, rainbow faces, dark-room layouts, and a time-only face
 - Can get glucose data from Dexcom Share, Nightscout, LibreLink Up or Medtrum EasyFollow
 - Supports mg/dl and mmol/l
 - 10 minutes setup through web browser
@@ -33,7 +24,6 @@ _Nightscout Clock (or NSClock) is an open-source product aimed at helping caregi
 - Marks stale readings with a configurable color and a cross instead of the trend arrow
 - Daily face and brightness schedules, or automatic cycling through your chosen faces
 - Offline configuration page with settings backup and restore
-- ...and more
 
 ### YouTube review
 
@@ -47,7 +37,7 @@ Thanks [@CallumMcK](https://github.com/CallumMcK)
 2. Wait a few days for the delivery
 3. Unpack, turn on (press on `<` and `>` buttons for a few seconds)
 4. Connect the USB-C cable (comes with the clock) to your computer
-5. Go to the [installation page](https://ktomy.github.io/nightscout-clock/)
+5. Go to the [installation page](https://josephfanpm.github.io/diabetesclock/)
 6. Follow the instructions. If installation fails, see the [troubleshooting guide](TROUBLESHOOTING.md#installation) and the [installation troubleshooting discussion](https://github.com/ktomy/nightscout-clock/discussions/57).
 7. Once the clock is installed, take out your phone and join `nsclock` wi-fi network. Then go to `http://192.168.4.1/`
 8. Set up your device, provide the Wi-Fi network details, your Dexcom, Nightscout, LibreLink Up or Medtrum EasyFollow credentials, glucose warning limits and other parameters
@@ -71,28 +61,17 @@ Nightscout Clock is a custom firmware for Ulanzi TC001. It can also run (with mi
 
 ### Clockfaces
 
-| Name            | Look                                                                                                 | Comment |
-| --------------- | ---------------------------------------------------------------------------------------------------- |---------|
-| Simple          | <img width="500" alt="Simple" src="https://github.com/user-attachments/assets/ad281e9f-8c7f-41ff-ba82-23c634171158" /> |   Horizontal bars in the bottom of the display <br /> indicate the time since the last reading <br />No bars: less than one minute <br /> 1..5 green bars: 1..5 minutes <br /> 5 yellow bars: 6..19 minutes <br /> value and bars use the configured old-data color from 20 minutes (default threshold) <br /> and the trend arrow is replaced by an X in the same color       |
-| BIG DIGITS      | <img width="500" alt="Big Digits" src="https://github.com/user-attachments/assets/1feae65b-21e9-4c20-8960-b75583baa142" /> | Age dots under the trend arrow show one dot per minute since the last reading, up to five; they turn yellow after five minutes and take the old-data color once data is old. They are on by default and can be turned off in the Big text drawer of the Clock faces card.<br /><br />The value can also turn cyan, blue or magenta once the reading is 6, 10 or 15 minutes old, in a color different from the old-data color and the range colors. An urgent reading keeps its urgent color. The old-data color still takes over at the data-is-old threshold. Off by default; set it in the same drawer. |
-| 3-hours graph   | <img width="500" alt="graph" src="https://github.com/user-attachments/assets/45d92097-f459-44d4-b1ae-a35c3cb38700" /> |         |
-| Graph and value | <img width="500" alt="Graph and value" src="https://github.com/user-attachments/assets/db9046aa-5121-43fa-b367-807cdf3c5ef3" /> |  The dots on the right side replace the trend arrow.<br>2 white dots = horizontal arrow.<br>2 colored dots (white + green) = 45° arrow.<br>3 dots = vertical arrow.<br>4 dots = double arrow.<br>Colored dots above = upward trend.<br>Colored dots below = downward trend. <br /><br /> Dots under the value are the same as <br /> horizontal bars on the other faces.<br /> See "Simple" face for details |
-| Delta           | <img width="500" alt="Photo of the Nightscout Clock" src="https://github.com/user-attachments/assets/f8005f49-6e32-43f1-bd84-0bb4e4691d7f" /> |         |
-| Time and value  | <img width="500" alt="Time and value" src="https://github.com/user-attachments/assets/cd72bf15-85e3-4621-b5ca-d639c1849cd5" /> | The dots on the right side replace the trend arrow.<br>2 white dots = horizontal arrow.<br>2 colored dots (white + green) = 45° arrow.<br>3 dots = vertical arrow.<br>4 dots = double arrow.<br>Colored dots above = upward trend.<br>Colored dots below = downward trend. <br /><br /> For the bottom-side bars see "Simple" face for details |
-| Unicorn         | <img width="500" alt="Unicorn and value" src="https://github.com/user-attachments/assets/78dd56a8-1501-493d-98be-5fb59ac9778d" /> | A unicorn whose mane of stepped color bands breaks into dim tips: magenta to blue for normal readings, warning or urgent colors outside the configured limits (every other band darker), and the configured old-data color for stale readings. Age bars appear below the value. Contributed by [@JuanMiste](https://github.com/JuanMiste); the picture was redrawn with a larger head and a banded mane in [#201](https://github.com/ktomy/nightscout-clock/pull/201).<br /><br />The mane is still by default; set it to moving (calm, normal or lively) in the Unicorn drawer of the Clock faces card, and choose how it moves: its colors flow down the bands, slide back toward the tips, or hold while a light runs along the bands. While the reading is fresh a low or high mane shows darker stripes, and in the outer quarter of the in-range, low or high band every third band of a moving mane takes the color of the band beyond that edge (green next to the in-range limit, the urgent color next to the urgent limit); dark stripes run past an urgent limit, and the mane stops in the old-data color when data is old. |
-| Race car        |  | A white race car speeds toward the value while speed lines stream past, the road slides back and the wheels spin. The speed lines show the glucose color: green in range; yellow with a darker stripe running through when low or high, with the urgent color mixed in near the urgent limit; and red with dark stripes past an urgent limit. For stale readings the whole race stops and is drawn faded, every other pixel, in the configured old-data color. Set the speed (calm, normal or lively) in the Race car drawer of the Clock faces card. Age bars appear below the value. |
-| Time only       | | Only the time: hours, minutes and seconds in 24-hour format, or hours, minutes and AM/PM in 12-hour format. Glucose is always hidden, including urgent readings and old or missing data. New glucose alarms are suppressed while this face is selected. Alarms already triggered, including snoozed alarms, continue normally. |
-| Simple (dark)   |  | Simple for a dark room: the number in one chosen color (white, cyan, blue or magenta, different from every range color, set in the Simple (dark) drawer of the Clock faces card), the trend arrow in the glucose range color, and no age bars. Urgent readings draw the number in the urgent color. Old data uses the old-data color. |
-| Dragon          |                                                                                                      | A little dragon breathes fire at the value, with age bars below it. The flame is magenta, orchid, purple and violet in range, the Unicorn's colors, and takes the low or high color outside the limits, with a darker stripe, the urgent color mixed in near the urgent limit, and dark stripes past an urgent limit, as on the moving Unicorn mane. When data is old the fire goes out and the dragon is drawn faded in the old-data color. Set the flame's speed (calm, normal or lively) in the Dragon drawer of the Clock faces card. |
-| Big text (dark) |  | Big text's large digits in the Simple (dark) number color, readable across a dark room, and the trend arrow in the glucose range color. Both dark faces share one number color setting. Big text's age dots are available too, off by default; turn them on in the Big text (dark) drawer of the Clock faces card. |
-| Rainbow clock   |  | The time with every character in a moving rainbow: hours, minutes and seconds in 24-hour format, or hours, minutes and AM/PM in 12-hour format. Like Time only, it always hides glucose and suppresses new alarms while selected; already-triggered and snoozed alarms continue normally. Contributed by [@adamecker](https://github.com/adamecker). |
-| Rainbow big text |  | Big text's large digits, each in a moving full rainbow whatever the value, with the trend arrow in the glucose range color. Stale readings stop and use the old-data color. Contributed by [@adamecker](https://github.com/adamecker). |
-| Rainbow mood    |  | A smiley, the value in rainbow digits, and the trend arrow. The smiley takes the glucose range color and changes expression with it: happy in range, shocked when low or falling, dizzy when high. Stale readings stop and use the old-data color. Contributed by [@adamecker](https://github.com/adamecker). |
-| Battery and uptime |  | The clock's battery level as a bar and a percentage, and the time since the clock started, in minutes, hours or days. It shows no glucose. Off by default; turn it on in the Clock faces card. Contributed by [@adamecker](https://github.com/adamecker). |
+| Name | Look | Comment |
+| ---- | ---- | ------- |
+| Glucose graph and value | <img width="500" alt="Graph and value" src="https://github.com/user-attachments/assets/db9046aa-5121-43fa-b367-807cdf3c5ef3" /> | The dots on the right side replace the trend arrow.<br>2 white dots = horizontal arrow.<br>2 colored dots (white + green) = 45° arrow.<br>3 dots = vertical arrow.<br>4 dots = double arrow.<br>Colored dots above = upward trend.<br>Colored dots below = downward trend.<br /><br />Bars under the value show the minutes since the last reading: 1..5 green, yellow from 6 minutes, and the old-data color once data is old. |
+| Value and delta | <img width="500" alt="Value and delta" src="https://github.com/user-attachments/assets/f8005f49-6e32-43f1-bd84-0bb4e4691d7f" /> | The value, the trend arrow, and the change since the previous reading. |
+| Current time and BG value | <img width="500" alt="Time and value" src="https://github.com/user-attachments/assets/cd72bf15-85e3-4621-b5ca-d639c1849cd5" /> | The time and the value, with trend dots as on Glucose graph and value. |
+| Time only | | Only the time. Glucose is hidden, and new glucose alarms are suppressed while this face is selected. |
+| Weather | | City code, weather icon, and temperature. Off by default; turn it on and set the city in the Clock faces card. Glucose alarms still sound on this face. |
 
 #### Active clock faces
 
-The Web UI's Clock faces card selects which faces are active. All of them except Battery and uptime are active out of the box; turning off the ones you never use shortens what the left and right buttons move between, and the default face is chosen among the active ones.
+The Web UI's Clock faces card selects which faces are active. All of them except Weather are active out of the box; turning off the ones you never use shortens what the left and right buttons move between, and the default face is chosen among the active ones.
 
 #### Automatic clock-face cycling
 
@@ -174,22 +153,11 @@ High, low, and urgent-low alarms each have their own threshold, snooze duration,
   - Faces you do not use can be turned off in the Web UI
   - Active clock faces can cycle automatically at a configurable interval
   - Face and brightness can follow a daily schedule
-  - Simple clock face (value and trend arrow)
-  - Full-width glucose graph
   - Graph, value and trend indicator
-  - BIG DIGITS, with age dots and an optional color for a late reading
   - Value, trend and delta
   - Clock and BG value (timezone is set in the clock's web interface)
-  - Unicorn and glucose value, with mane colors based on glucose limits
-  - Race car and glucose value, with speed lines in the glucose color
   - Time only, always hiding glucose and suppressing new alarms while selected; already-triggered alarms continue normally
-  - Simple (dark): the number in a color of your choice with the glucose color on the trend arrow, for night
-  - Dragon and glucose value, breathing fire in colors based on glucose limits
-  - Big text (dark): the same with BIG DIGITS
-  - Rainbow clock: the time in moving rainbow colors, hiding glucose and suppressing new alarms like Time only
-  - Rainbow big text: BIG DIGITS in a moving rainbow
-  - Rainbow mood: a smiley whose expression follows the glucose range, beside the value in rainbow digits
-  - Battery and uptime: battery level and time since start, off by default
+  - Weather: city code, weather icon and temperature from Open-Meteo, off by default
 - Configurable color for old readings and no-data screens: gray (default), cyan, magenta, or blue. Choose it on the Display tab of the Web UI; the alternatives help keep stale readings visible at low brightness
 - Smart data and screen update timings: read data once it appears, refresh screen when needed
 - API data source. The clock has a simple Nightscout-like API which can receive glucose values from an external source. The main purpose of this feature is the ability to test the clock during the clockfaces development. In order to activate this feature, select the API data source within the clock's Web UI. Here are the endpoints:

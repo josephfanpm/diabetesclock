@@ -1,123 +1,382 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
     <meta charset="utf-8" />
-    <title>Nightscout clock web flasher</title>
-    <meta name="description" content="Easily allow users to install Nightscout clock firmware on the web." />
-    <meta name="viewport" content="width=device-width" />
+    <title>Diabetes Clock</title>
+    <meta name="description" content="Install the Diabetes Clock firmware on an Ulanzi TC001 and preview its clock faces." />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="color-scheme" content="dark light" />
     <style>
-        body {
-            font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI",
-                Roboto, Ubuntu, sans-serif;
-            padding: 0;
-            margin: 0;
-            line-height: 1.4;
-        }
-
-        .content {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 12px;
-        }
-
-        h2 {
-            margin-top: 2em;
-        }
-
-        h3 {
-            margin-top: 1.5em;
-        }
-
-        a {
-            color: #03a9f4;
-        }
-
-        .invisible {
-            visibility: hidden;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        esp-web-install-button[install-unsupported] {
-            visibility: inherit;
-        }
-
-        .content pre {
-            max-width: 100%;
-            overflow-y: scroll;
-        }
-
-        .footer {
-            margin-top: 24px;
-            border-top: 1px solid #ccc;
-            padding-top: 24px;
-            text-align: center;
-        }
-
-        .footer .initiative {
-            font-style: italic;
-            margin-top: 16px;
-        }
-
-        table {
-            border-spacing: 0;
-        }
-
-        td {
-            padding: 8px;
-            border-bottom: 1px solid #ccc;
-        }
-
-        .radios li {
-            list-style: none;
-            line-height: 2em;
+        :root {
+            --bg: #f6f7f9;
+            --surface: #ffffff;
+            --text: #16181d;
+            --muted: #5d6470;
+            --line: #dde1e7;
+            --accent: #0a84ff;
+            --accent-text: #ffffff;
+            --chip: #eef1f5;
         }
 
         @media (prefers-color-scheme: dark) {
-            body {
-                background-color: #333;
-                color: #fff;
+            :root {
+                --bg: #111317;
+                --surface: #1a1d23;
+                --text: #eef0f3;
+                --muted: #9aa2ae;
+                --line: #2c313a;
+                --accent: #4da3ff;
+                --accent-text: #0b1220;
+                --chip: #242830;
             }
+        }
 
-            a {
-                color: #58a6ff;
-            }
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Ubuntu, sans-serif;
+            line-height: 1.45;
+        }
+
+        .content {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 24px 16px 48px;
+        }
+
+        h1 { margin: 0 0 4px; font-size: 1.8rem; }
+        h2 { margin: 36px 0 12px; font-size: 1.2rem; }
+        .lead { margin: 0; color: var(--muted); }
+        a { color: var(--accent); }
+        [hidden] { display: none !important; }
+
+        /* The clock: 32x8 LEDs in a dark case, whatever the page theme. */
+        .device {
+            background: #0b0b0c;
+            border-radius: 14px;
+            padding: 14px;
+            box-shadow: inset 0 0 0 1px #26282c, 0 8px 24px rgba(0, 0, 0, .25);
+        }
+
+        .device canvas { display: block; width: 100%; height: auto; }
+
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 14px 0 6px;
+        }
+
+        button.chip {
+            font: inherit;
+            font-size: .92rem;
+            border: 1px solid var(--line);
+            background: var(--chip);
+            color: var(--text);
+            border-radius: 999px;
+            padding: 6px 14px;
+            cursor: pointer;
+        }
+
+        button.chip[aria-pressed="true"] {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: var(--accent-text);
+        }
+
+        .controls {
+            display: grid;
+            gap: 10px;
+            margin-top: 14px;
+            padding: 14px;
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+        }
+
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .row > .label {
+            width: 96px;
+            color: var(--muted);
+            font-size: .9rem;
+        }
+
+        .seg { display: inline-flex; flex-wrap: wrap; gap: 6px; }
+        .seg button.chip { padding: 4px 11px; font-size: .86rem; }
+
+        input[type="text"] {
+            font: inherit;
+            color: var(--text);
+            background: var(--bg);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 6px 10px;
+            min-width: 0;
+        }
+
+        #city { flex: 1 1 160px; }
+        #code { width: 72px; text-transform: uppercase; }
+
+        .status { color: var(--muted); font-size: .9rem; min-height: 1.3em; }
+
+        ol.steps { padding-left: 20px; }
+        ol.steps li { margin: 4px 0; }
+
+        .install { text-align: center; margin: 20px 0 8px; }
+        esp-web-install-button[install-unsupported] { visibility: inherit; }
+
+        .note {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 12px 14px;
+        }
+
+        .footer {
+            margin-top: 40px;
+            padding-top: 16px;
+            border-top: 1px solid var(--line);
+            color: var(--muted);
+            font-size: .9rem;
         }
     </style>
     <script type="module" src="https://unpkg.com/esp-web-tools@8.0.1/dist/web/install-button.js?module"></script>
+    <script src="preview/font.js"></script>
+    <script src="preview/faces.js"></script>
 </head>
 
 <body>
     <div class="content">
-        <h1>Nightscout clock installer</h1>
-        <p>
-            This page is part of the <a href="https://github.com/ktomy/nightscout-clock/">Nightscout Clock</a> project.
-            It allows you to transform an Ulanzi TC001 programmable clock into a device showing blood sugar values
-            through <a href="https://github.com/nightscout/cgm-remote-monitor">Nightscout</a>
-        </p>
-        <p>
-            Here are the steps to install the firmware
-        </p>
-        <ul>
-            <li>Buy Ulanzi TC001 from <a
-                    href="https://www.ulanzi.com/products/ulanzi-pixel-smart-clock-2882?aff=1191">here</a>)</li>
-            <li>Turn on the device by pressing &lt; and &gt; buttons for 3 seconds</li>
-            <li>Connect the device to your computer using USB cable</li>
-            <li>Click the <b>CONNECT</b> button below</li>
-            <li>Follow the instructions</li>
-        </ul>
-        <p>
-            If the installation fails or the clock does not work as expected, see the
-            <a href="https://github.com/ktomy/nightscout-clock/blob/main/TROUBLESHOOTING.md">troubleshooting guide</a>.
-        </p>
-        <p class="button-row" align="center">
-            <esp-web-install-button manifest="./manifest.json"></esp-web-install-button>
-        </p>
+        <h1>Diabetes Clock</h1>
+        <p class="lead">Glucose readings on an Ulanzi TC001 pixel clock, from Dexcom, Nightscout, LibreLinkUp or Medtrum.</p>
 
+        <h2>Clock faces</h2>
+        <div class="device"><canvas id="leds" width="640" height="160" aria-label="Clock preview"></canvas></div>
+        <div class="tabs" id="faces" role="group" aria-label="Clock face"></div>
+
+        <div class="controls" id="glucose_controls">
+            <div class="row" data-glucose><span class="label">Glucose</span><span class="seg" data-key="scenario"></span></div>
+            <div class="row" data-glucose><span class="label">Last reading</span><span class="seg" data-key="age"></span></div>
+            <div class="row" data-glucose><span class="label">Units</span><span class="seg" data-key="units"></span></div>
+            <div class="row" data-time><span class="label">Time</span><span class="seg" data-key="timeFormat"></span></div>
+        </div>
+
+        <div class="controls" id="weather_controls" hidden>
+            <div class="row">
+                <span class="label">City</span>
+                <input type="text" id="city" value="Austin, TX" autocomplete="off" spellcheck="false" aria-label="City" />
+                <input type="text" id="code" maxlength="3" placeholder="AUS" autocomplete="off" spellcheck="false" aria-label="Code" />
+            </div>
+            <div class="row"><span class="label">Units</span><span class="seg" data-key="weatherUnits"></span></div>
+            <div class="row"><span class="label">Icon</span><span class="seg" data-key="icon"></span></div>
+            <div class="status" id="weather_status" aria-live="polite"></div>
+        </div>
+
+        <h2>Install</h2>
+        <ol class="steps">
+            <li>Turn the clock on: hold <b>&lt;</b> and <b>&gt;</b> for 3 seconds.</li>
+            <li>Connect it to this computer with a USB cable.</li>
+            <li>Open this page in Chrome or Edge, then select <b>Connect</b>.</li>
+            <li>Join the <b>nsclock</b> Wi-Fi network on your phone and open <b>http://192.168.4.1/</b> to set it up.</li>
+        </ol>
+        <p class="install"><esp-web-install-button manifest="./manifest.json"></esp-web-install-button></p>
+
+        <div class="note">
+            If no new reading arrives for 15 minutes, the clock restarts itself and signs in again.
+        </div>
+
+        <div class="footer">
+            Source: <a href="https://github.com/josephfanpm/diabetesclock">josephfanpm/diabetesclock</a>.
+            Based on <a href="https://github.com/ktomy/nightscout-clock">Nightscout Clock</a> by ktomy (LGPL-2.1).
+            Not a medical device.
+        </div>
+    </div>
+
+    <script>
+        const state = {
+            face: "value_and_diff",
+            scenario: "inRange",
+            age: 0,
+            units: "mgdl",
+            timeFormat: "24",
+            weatherUnits: "f",
+            icon: null,
+            weather: { city: "Austin, TX", code: "", valid: false, temperature: 0, icon: "cloud" },
+        }
+
+        const OPTIONS = {
+            scenario: [["inRange", "In range"], ["high", "High"], ["low", "Low"]],
+            age: [[0, "Now"], [3, "3 min"], [8, "8 min"], [25, "25 min"]],
+            units: [["mgdl", "mg/dL"], ["mmol", "mmol/L"]],
+            timeFormat: [["24", "24h"], ["12", "AM/PM"]],
+            weatherUnits: [["f", "°F"], ["c", "°C"]],
+            icon: [[null, "Live"], ["sun", "Sun"], ["moon", "Clear night"], ["partly", "Partly cloudy"], ["cloud", "Cloudy"],
+                ["fog", "Fog"], ["rain", "Rain"], ["snow", "Snow"], ["storm", "Storm"]],
+        }
+
+        // ---------- controls ----------
+        function chip(label, pressed, onclick) {
+            const b = document.createElement("button")
+            b.type = "button"
+            b.className = "chip"
+            b.textContent = label
+            b.setAttribute("aria-pressed", String(pressed))
+            b.addEventListener("click", onclick)
+            return b
+        }
+
+        function renderControls() {
+            document.getElementById("faces").replaceChildren(...FACES.map(f =>
+                chip(f.name, f.id === state.face, () => { state.face = f.id; renderControls(); draw() })))
+            for (const seg of document.querySelectorAll(".seg")) {
+                const key = seg.dataset.key
+                seg.replaceChildren(...OPTIONS[key].map(([value, label]) => chip(label, state[key] === value, () => {
+                    state[key] = value
+                    renderControls()
+                    if (key === "weatherUnits") loadWeather()
+                    else draw()
+                })))
+            }
+            const weather = state.face === "weather", timeOnly = state.face === "time_only"
+            document.getElementById("weather_controls").hidden = !weather
+            document.getElementById("glucose_controls").hidden = weather
+            for (const row of document.querySelectorAll("[data-glucose]")) row.hidden = timeOnly
+            document.querySelector("[data-time]").hidden = state.face === "value_and_diff" || state.face === "graph_and_bg"
+        }
+
+        // ---------- drawing ----------
+        const matrix = new Matrix()
+        const canvas = document.getElementById("leds")
+
+        function rgb565(c) {
+            const r = (c >> 11) & 0x1f, g = (c >> 5) & 0x3f, b = c & 0x1f
+            return [Math.round(r * 255 / 31), Math.round(g * 255 / 63), Math.round(b * 255 / 31)]
+        }
+
+        function paint() {
+            const ratio = window.devicePixelRatio || 1
+            const width = canvas.clientWidth || 640
+            canvas.width = Math.round(width * ratio)
+            canvas.height = Math.round(width / 4 * ratio)
+            const g = canvas.getContext("2d")
+            const pitch = canvas.width / MATRIX_WIDTH
+            const size = pitch * 0.78
+            g.fillStyle = "#0b0b0c"
+            g.fillRect(0, 0, canvas.width, canvas.height)
+            for (let y = 0; y < MATRIX_HEIGHT; y++) {
+                for (let x = 0; x < MATRIX_WIDTH; x++) {
+                    const c = matrix.get(x, y)
+                    const px = x * pitch + (pitch - size) / 2, py = y * pitch + (pitch - size) / 2
+                    if (c) {
+                        const [r, gr, b] = rgb565(c)
+                        g.shadowColor = `rgba(${r},${gr},${b},0.75)`
+                        g.shadowBlur = pitch * 0.6
+                        g.fillStyle = `rgb(${r},${gr},${b})`
+                    } else {
+                        g.shadowBlur = 0
+                        g.fillStyle = "#1b1c1f"
+                    }
+                    g.beginPath()
+                    g.roundRect(px, py, size, size, size * 0.18)
+                    g.fill()
+                }
+            }
+            g.shadowBlur = 0
+        }
+
+        function draw() {
+            const now = Math.floor(Date.now() / 1000)
+            const readings = sampleReadings(state.scenario, state.age, now)
+            const ageSeconds = state.age * 60 + 20
+            const weather = { ...state.weather, icon: state.icon || state.weather.icon, valid: state.weather.valid || !!state.icon }
+            const ctx = {
+                now, readings, ageSeconds, units: state.units, timeFormat: state.timeFormat, time: new Date(),
+                dataIsOld: ageSeconds > 60 * DATA_OLD_MINUTES, weather,
+            }
+            matrix.clear()
+            FACES.find(f => f.id === state.face).draw(matrix, ctx)
+            paint()
+        }
+
+        // ---------- live weather from Open-Meteo, the same service the clock uses ----------
+        const US_STATES = { al: "alabama", ak: "alaska", az: "arizona", ar: "arkansas", ca: "california", co: "colorado",
+            ct: "connecticut", de: "delaware", fl: "florida", ga: "georgia", hi: "hawaii", id: "idaho", il: "illinois",
+            in: "indiana", ia: "iowa", ks: "kansas", ky: "kentucky", la: "louisiana", me: "maine", md: "maryland",
+            ma: "massachusetts", mi: "michigan", mn: "minnesota", ms: "mississippi", mo: "missouri", mt: "montana",
+            ne: "nebraska", nv: "nevada", nh: "new hampshire", nj: "new jersey", nm: "new mexico", ny: "new york",
+            nc: "north carolina", nd: "north dakota", oh: "ohio", ok: "oklahoma", or: "oregon", pa: "pennsylvania",
+            ri: "rhode island", sc: "south carolina", sd: "south dakota", tn: "tennessee", tx: "texas", ut: "utah",
+            vt: "vermont", va: "virginia", wa: "washington", wv: "west virginia", wi: "wisconsin", wy: "wyoming",
+            dc: "district of columbia" }
+
+        const ICON_TEXT = { sun: "Clear", moon: "Clear", partly: "Partly cloudy", cloud: "Cloudy", fog: "Fog", rain: "Rain", snow: "Snow", storm: "Thunderstorm" }
+
+        let weatherRequest = 0
+        async function loadWeather() {
+            const request = ++weatherRequest
+            const status = document.getElementById("weather_status")
+            const comma = state.weather.city.indexOf(",")
+            const city = (comma < 0 ? state.weather.city : state.weather.city.slice(0, comma)).trim()
+            const region = comma < 0 ? "" : state.weather.city.slice(comma + 1).trim().toLowerCase()
+            if (city.length < 2) {
+                state.weather.valid = false
+                status.textContent = ""
+                return draw()
+            }
+            status.textContent = "Loading…"
+            try {
+                const geo = await (await fetch(`https://geocoding-api.open-meteo.com/v1/search?count=10&language=en&format=json&name=${encodeURIComponent(city)}`)).json()
+                const results = geo.results || []
+                if (!results.length) throw new Error("City not found")
+                const stateName = US_STATES[region] || region
+                const inRegion = r => [r.country_code, r.country, r.admin1].some(n => n && (n.toLowerCase().startsWith(region) || n.toLowerCase() === stateName))
+                const place = (region && results.find(inRegion)) || results[0]
+                const unit = state.weatherUnits === "c" ? "celsius" : "fahrenheit"
+                const forecast = await (await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${place.latitude}&longitude=${place.longitude}&current=temperature_2m,weather_code,is_day&temperature_unit=${unit}`)).json()
+                if (request !== weatherRequest) return
+                const current = forecast.current
+                state.weather.valid = true
+                state.weather.temperature = Math.round(current.temperature_2m)
+                state.weather.icon = weatherIcon(current.weather_code, current.is_day === 1)
+                status.textContent = `${place.name}${place.admin1 ? ", " + place.admin1 : ""} · ${state.weather.temperature}°${state.weatherUnits.toUpperCase()} · ${ICON_TEXT[state.weather.icon]}`
+            } catch (e) {
+                if (request !== weatherRequest) return
+                state.weather.valid = false
+                status.textContent = e.message === "City not found" ? "City not found" : "Weather unavailable"
+            }
+            draw()
+        }
+
+        let cityTimer
+        document.getElementById("city").addEventListener("input", e => {
+            state.weather.city = e.target.value
+            document.getElementById("code").placeholder = cityCode(e.target.value, "") || "AUS"
+            draw()
+            clearTimeout(cityTimer)
+            cityTimer = setTimeout(loadWeather, 500)
+        })
+        document.getElementById("code").addEventListener("input", e => {
+            state.weather.code = e.target.value.replace(/[^A-Za-z]/g, "")
+            e.target.value = state.weather.code.toUpperCase()
+            draw()
+        })
+
+        renderControls()
+        draw()
+        loadWeather()
+        setInterval(draw, 1000)
+        window.addEventListener("resize", paint)
+    </script>
 </body>
 
 </html>
