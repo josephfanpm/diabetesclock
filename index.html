@@ -174,8 +174,8 @@
         <div class="controls" id="weather_controls" hidden>
             <div class="row">
                 <span class="label">City</span>
-                <input type="text" id="city" value="Austin, TX" autocomplete="off" spellcheck="false" aria-label="City" />
-                <input type="text" id="code" maxlength="3" placeholder="AUS" autocomplete="off" spellcheck="false" aria-label="Code" />
+                <input type="text" id="city" value="New York City" autocomplete="off" spellcheck="false" aria-label="City" />
+                <input type="text" id="code" maxlength="3" placeholder="NYC" autocomplete="off" spellcheck="false" aria-label="Code" />
             </div>
             <div class="row"><span class="label">Units</span><span class="seg" data-key="weatherUnits"></span></div>
             <div class="row"><span class="label">Icon</span><span class="seg" data-key="icon"></span></div>
@@ -206,11 +206,11 @@
             face: "value_and_diff",
             scenario: "inRange",
             age: 0,
-            units: "mgdl",
+            units: "mmol",
             timeFormat: "24",
             weatherUnits: "f",
             icon: null,
-            weather: { city: "Austin, TX", code: "", valid: false, temperature: 0, icon: "cloud" },
+            weather: { city: "New York City", code: "", coords: null, placeName: "", valid: false, temperature: 0, icon: "cloud" },
         }
 
         const OPTIONS = {
@@ -236,7 +236,7 @@
 
         function renderControls() {
             document.getElementById("faces").replaceChildren(...FACES.map(f =>
-                chip(f.name, f.id === state.face, () => { state.face = f.id; renderControls(); draw() })))
+                chip(f.name, f.id === state.face, () => { state.face = f.id; renderControls(); draw(); if (f.id === "weather") askLocation() })))
             for (const seg of document.querySelectorAll(".seg")) {
                 const key = seg.dataset.key
                 seg.replaceChildren(...OPTIONS[key].map(([value, label]) => chip(label, state[key] === value, () => {
@@ -334,12 +334,15 @@
             }
             status.textContent = "Loading…"
             try {
-                const geo = await (await fetch(`https://geocoding-api.open-meteo.com/v1/search?count=10&language=en&format=json&name=${encodeURIComponent(city)}`)).json()
-                const results = geo.results || []
-                if (!results.length) throw new Error("City not found")
-                const stateName = US_STATES[region] || region
-                const inRegion = r => [r.country_code, r.country, r.admin1].some(n => n && (n.toLowerCase().startsWith(region) || n.toLowerCase() === stateName))
-                const place = (region && results.find(inRegion)) || results[0]
+                let place = state.weather.coords
+                if (!place) {
+                    const geo = await (await fetch(`https://geocoding-api.open-meteo.com/v1/search?count=10&language=en&format=json&name=${encodeURIComponent(city)}`)).json()
+                    const results = geo.results || []
+                    if (!results.length) throw new Error("City not found")
+                    const stateName = US_STATES[region] || region
+                    const inRegion = r => [r.country_code, r.country, r.admin1].some(n => n && (n.toLowerCase().startsWith(region) || n.toLowerCase() === stateName))
+                    place = (region && results.find(inRegion)) || results[0]
+                }
                 const unit = state.weatherUnits === "c" ? "celsius" : "fahrenheit"
                 const forecast = await (await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${place.latitude}&longitude=${place.longitude}&current=temperature_2m,weather_code,is_day&temperature_unit=${unit}`)).json()
                 if (request !== weatherRequest) return
@@ -356,10 +359,34 @@
             draw()
         }
 
+        // Asked once, when the Weather face is first opened. New York City stays if the visitor declines,
+        // the browser can't locate them, or they have already typed a city.
+        let locationAsked = false, cityTyped = false
+        function askLocation() {
+            if (locationAsked || cityTyped || !navigator.geolocation) return
+            locationAsked = true
+            navigator.geolocation.getCurrentPosition(async pos => {
+                const { latitude, longitude } = pos.coords
+                try {
+                    const r = await (await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`)).json()
+                    const name = r.city || r.locality
+                    if (!name || cityTyped) return
+                    const region = r.countryCode === "US" ? String(r.principalSubdivisionCode || "").replace("US-", "") : r.countryCode
+                    state.weather.city = region ? `${name}, ${region}` : name
+                    state.weather.coords = { latitude, longitude, name, admin1: r.principalSubdivision }
+                    document.getElementById("city").value = state.weather.city
+                    document.getElementById("code").placeholder = cityCode(state.weather.city, "") || "NYC"
+                    loadWeather()
+                } catch (e) { /* keep New York City */ }
+            }, () => { /* declined or unavailable: keep New York City */ }, { timeout: 10000, maximumAge: 600000 })
+        }
+
         let cityTimer
         document.getElementById("city").addEventListener("input", e => {
+            cityTyped = true
+            state.weather.coords = null
             state.weather.city = e.target.value
-            document.getElementById("code").placeholder = cityCode(e.target.value, "") || "AUS"
+            document.getElementById("code").placeholder = cityCode(e.target.value, "") || "NYC"
             draw()
             clearTimeout(cityTimer)
             cityTimer = setTimeout(loadWeather, 500)
