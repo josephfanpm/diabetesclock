@@ -326,7 +326,7 @@ function facesCard() {
 
 // Settings that belong to a face, by face id, shown in a drawer while that face is active. Faces sharing
 // settings share one drawer, titled with the active faces it covers.
-const FACE_DRAWERS = { big_text: bigTextSettings, unicorn: unicornSettings, simple_dark: darkFaceSettings, race_car: raceCarSettings, dragon: dragonSettings, big_text_dark: darkFaceSettings }
+const FACE_DRAWERS = { weather: weatherSettings }
 
 function faceDrawers() {
     return reactive(["inactive_faces"], () => {
@@ -358,48 +358,23 @@ function drawer(title, body) {
     return el("div.drawer", el("div.row.spread", el("h3", title), toggle), panel)
 }
 
-function bigTextSettings() {
-    return el("div.stack",
-        field("face_big_text_early_stale_color", "Color when a reading is late", segmented("face_big_text", EARLY_STALE_COLORS, { prop: "early_stale_color", label: "Color when a reading is late" }),
-            "Color late readings until the old-data threshold. Urgent readings keep their glucose color. Off keeps the usual glucose colors."),
-        field("face_big_text_early_stale_minutes", "Late after", segmented("face_big_text", EARLY_STALE_MINUTES, { numeric: true, prop: "early_stale_minutes", label: "Late after" })),
-        field("face_big_text_age_dots", "Age dots", segmented("face_big_text", AGE_DOTS, { prop: "age_dots", label: "Age dots" }),
-            "One dot under the trend arrow for each minute since the last reading, up to five."))
+// The code defaults to the city's initials when it has three or more words, otherwise its first three letters.
+function cityCode(city) {
+    const name = String(city || "").split(",")[0].trim()
+    const initials = name.split(/[\s-]+/).filter(Boolean).map(w => w[0]).join("")
+    return (initials.length >= 3 ? initials : name.replace(/[^A-Za-z]/g, "")).slice(0, 3).toUpperCase()
 }
 
-function unicornSettings() {
-    return reactive(["face_unicorn"], () => {
-        const moving = (form.get("face_unicorn") || {}).mane === "moving"
-        return el("div.stack",
-            field("face_unicorn_mane", "Mane", segmented("face_unicorn", MANE_MODES, { prop: "mane", label: "Mane" }),
-                "A moving mane moves its colors while the reading is fresh, and stops in the old data color when data is old."),
-            moving ? field("face_unicorn_speed", "Speed", segmented("face_unicorn", ANIMATION_SPEEDS, { prop: "speed", label: "Speed" })) : null,
-            moving ? field("face_unicorn_flow", "Motion", segmented("face_unicorn", MANE_FLOWS, { prop: "flow", label: "Motion" }),
-                "Top to bottom rolls the colors down the bands. Colors scroll back slides them from the head toward the tips. Light runs along the bands keeps each band's color and runs a light toward the tips.") : null)
+function weatherSettings() {
+    const code = reactive(["weather_city"], () => {
+        const input = textInput("weather_code", { placeholder: cityCode(form.get("weather_city")), maxlength: 3, trim: true })
+        input.addEventListener("input", () => { input.value = input.value.toUpperCase(); form.set("weather_code", input.value) })
+        return field("weather_code", "Code", input)
     })
-}
-
-function dragonSettings() {
     return el("div.stack",
-        field("face_dragon_speed", "Speed", segmented("face_dragon", ANIMATION_SPEEDS, { prop: "speed", label: "Speed" }),
-            "The flame moves while the reading is fresh, and goes out when data is old."))
-}
-
-function raceCarSettings() {
-    return el("div.stack",
-        field("face_race_car_speed", "Speed", segmented("face_race_car", ANIMATION_SPEEDS, { prop: "speed", label: "Speed" }),
-            "The speed lines show the glucose color while the reading is fresh, and the race stops in the old data color when data is old."))
-}
-
-function darkFaceSettings() {
-    const valueColor = field("face_simple_dark_value_color", "Number color",
-        swatches("face_simple_dark", DARK_VALUE_COLORS, { prop: "value_color", label: "Number color", fallback: "white" }),
-        "Both dark faces use it. Urgent readings and the trend arrow keep the glucose colors, and old data uses the old data color.")
-    // Only Big text (dark) has room for age dots under its arrow.
-    if (!activeFaceIds(form.get("inactive_faces")).includes("big_text_dark")) return valueColor
-    return el("div.stack", valueColor,
-        field("face_big_text_dark_age_dots", "Age dots on Big text (dark)", segmented("face_big_text_dark", AGE_DOTS, { prop: "age_dots", label: "Age dots on Big text (dark)" }),
-            "One dot under the trend arrow for each minute since the last reading, up to five."))
+        field("weather_city", "City", textInput("weather_city", { placeholder: "Austin, TX", maxlength: 64, trim: true })),
+        code,
+        field("weather_units", "Units", segmented("weather_units", WEATHER_UNITS, { label: "Units" })))
 }
 
 /**
@@ -1077,7 +1052,7 @@ function versionCard() {
         el("p.help", { id: "fw_status" }, ...versionStatusNodes())), { id: "card_version" })
 }
 
-const DEBUG_FIRMWARE_URL = "https://ktomy.github.io/nightscout-clock/debug/"
+const DEBUG_FIRMWARE_URL = "https://josephfanpm.github.io/diabetesclock/debug/"
 
 /**
  * Download the clock's in-memory debug log for troubleshooting.
@@ -1111,8 +1086,8 @@ async function downloadDebugLogs() {
 function versionStatusNodes() {
     const v = ui.versions
     if (v.update) {
-        return [el("a", { href: "https://ktomy.github.io/nightscout-clock/", target: "_blank", rel: "noopener noreferrer" }, `Update to ${v.latest}`), " · ",
-            el("a", { href: "https://github.com/ktomy/nightscout-clock/tree/main?tab=readme-ov-file#changes", target: "_blank", rel: "noopener noreferrer" }, "Changes")]
+        return [el("a", { href: "https://josephfanpm.github.io/diabetesclock/", target: "_blank", rel: "noopener noreferrer" }, `Update to ${v.latest}`), " · ",
+            el("a", { href: "https://github.com/josephfanpm/diabetesclock#readme", target: "_blank", rel: "noopener noreferrer" }, "Changes")]
     }
     return [v.status || "Checking for updates…"]
 }

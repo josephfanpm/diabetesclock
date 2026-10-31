@@ -1,4 +1,4 @@
-// same as BGDisplayFaceGraph.h but with glucose value
+// A short glucose graph with the current value
 #ifndef BGDISPLAYFACEGRAPHANDBG_H
 #define BGDISPLAYFACEGRAPHANDBG_H
 

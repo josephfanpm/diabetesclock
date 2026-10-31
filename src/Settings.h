@@ -121,6 +121,10 @@ public:
     int alarm_repeat_interval_seconds = 300;
     bool web_auth_enable;
     String web_auth_password;
+    // Weather face: the city to show, its three-letter code, and the temperature unit.
+    String weather_city;
+    String weather_code;
+    bool weather_fahrenheit = true;
 };
 
 #endif

@@ -62,27 +62,17 @@
 
 // Stable IDs must match BGDisplayManager::setup(); array order controls UI display order.
 const FACES = [
-    { id: "simple", name: "Simple" },
-    { id: "graph", name: "Full glucose graph" },
     { id: "graph_and_bg", name: "Glucose graph and value" },
-    { id: "big_text", name: "Big text" },
     { id: "value_and_diff", name: "Value and delta" },
     { id: "clock", name: "Current time and BG value" },
-    { id: "unicorn", name: "Unicorn" },
     { id: "time_only", name: "Time only" },
-    { id: "simple_dark", name: "Simple (dark)" },
-    { id: "race_car", name: "Race car" },
-    { id: "dragon", name: "Dragon" },
-    { id: "big_text_dark", name: "Big text (dark)" },
-    { id: "rainbow_clock", name: "Rainbow clock" },
-    { id: "big_text_rainbow", name: "Rainbow big text" },
-    { id: "rainbow_mood", name: "Rainbow mood" },
-    { id: "battery_uptime", name: "Battery and uptime" },
+    { id: "weather", name: "Weather" },
 ]
 
 // Clocks set up on 1.0.0 or earlier stored each face as its number, the face's index in this order.
 // Must match NUMBERED_FACE_IDS in SettingsSchedule.cpp.
-const NUMBERED_FACE_IDS = FACES.slice(0, 12).map(f => f.id)
+const NUMBERED_FACE_IDS = ["simple", "graph", "graph_and_bg", "big_text", "value_and_diff", "clock",
+    "unicorn", "time_only", "simple_dark", "race_car", "dragon", "big_text_dark"]
 // Any other number is left as it is, so it is refused like any unknown face.
 const readFaceId = id => typeof id === "number" ? NUMBERED_FACE_IDS[id] ?? id : id
 
@@ -135,15 +125,7 @@ const BAND_COLORS_APART = [
 ]
 const LIMIT_KEYS = ["low_urgent_mgdl", "low_mgdl", "high_mgdl", "high_urgent_mgdl"]
 const OLD_DATA_COLORS = [["gray", "Gray"], ["cyan", "Cyan"], ["magenta", "Magenta"], ["blue", "Blue"]]
-// No red, yellow or green: those are glucose colors.
-const EARLY_STALE_COLORS = [["off", "Off"], ["cyan", "Cyan"], ["blue", "Blue"], ["magenta", "Magenta"]]
-const EARLY_STALE_MINUTES = [[6, "6 min"], [10, "10 min"], [15, "15 min"]]
-const AGE_DOTS = [["on", "On"], ["off", "Off"]]
-const MANE_MODES = [["still", "Still"], ["moving", "Moving"]]
-const MANE_FLOWS = [["down", "Top to bottom"], ["back", "Colors scroll back"], ["run", "Light runs along the bands"]]
-const ANIMATION_SPEEDS = [["calm", "Calm"], ["normal", "Normal"], ["lively", "Lively"]]
-// No glucose colors, which would read as a glucose state, and no gray, which is dark at the lowest brightness.
-const DARK_VALUE_COLORS = [["white", "White"], ["cyan", "Cyan"], ["blue", "Blue"], ["magenta", "Magenta"]]
+const WEATHER_UNITS = [["f", "°F"], ["c", "°C"]]
 const CYCLE_INTERVALS = [[10, "10 s"], [30, "30 s"], [60, "1 min"], [120, "2 min"], [180, "3 min"], [300, "5 min"]]
 const TIME_FORMATS = [["24", "24h"], ["12", "AM/PM"]]
 const SNOOZES = [[5, "5 minutes"], [10, "10 minutes"], [15, "15 minutes"], [30, "30 minutes"], [60, "1 hour"], [120, "2 hours"], [0, "Until next trigger"]]
@@ -394,36 +376,10 @@ function validateConfig(c, ctx) {
         need("face_schedule", rows.every(row => isTime(row.time)), "Every row needs a valid time.")
         need("face_schedule", new Set(rows.map(row => row.time)).size === rows.length, "Two rows have the same time.")
     }
-    // Big text's late color has to start before data counts as old, which the no data timer sets, and look
-    // different from old data.
-    const bigText = c.face_big_text || {}
-    const oldMinutes = c.custom_nodatatimer_enable && c.custom_nodatatimer > 5 && c.custom_nodatatimer <= 60 ? c.custom_nodatatimer : 20
-    const oldColor = c.data_old_color || "gray"
-    if (active.includes("big_text") && (bigText.early_stale_color || "off") !== "off") {
-        need("face_big_text_early_stale_color", bigText.early_stale_color !== oldColor,
-            `The Big text late color must differ from the old data color (${OLD_DATA_COLORS.find(([v]) => v === oldColor)[1]}), or the two can't be told apart.`)
-        const lateBand = BANDS.find(b => c[b.color] === bigText.early_stale_color)
-        if (lateBand) {
-            need("face_big_text_early_stale_color", false,
-                `${lateBand.name} readings use this color. Choose another late color, or a late reading could look ${lateBand.name.toLowerCase()}.`)
-            need(lateBand.color, false, "Big text shows late readings in this color. Choose another color.")
-        }
-        need("face_big_text_early_stale_minutes", bigText.early_stale_minutes < oldMinutes,
-            `The Big text late color must start before data counts as old (${oldMinutes} minutes). Choose fewer minutes, a longer no data timer, or Off.`)
-    }
-    // A fresh number in the old data color would read as old data.
-    const darkValueColor = (c.face_simple_dark || {}).value_color
-    if (active.includes("simple_dark") || active.includes("big_text_dark")) {
-        need("face_simple_dark_value_color", darkValueColor !== oldColor,
-            `The dark faces' number color must differ from the old data color (${OLD_DATA_COLORS.find(([v]) => v === oldColor)[1]}), or a fresh reading would look old.`)
-        need("face_simple_dark_value_color", inOptions(darkValueColor, DARK_VALUE_COLORS), "Please choose a number color.")
-        // The number keeps one color whatever the reading, so it must not match a range color.
-        const numberBand = BANDS.find(b => c[b.color] === darkValueColor)
-        if (numberBand) {
-            need("face_simple_dark_value_color", false,
-                `${numberBand.name} readings use this color. Choose another number color, or every reading would look ${numberBand.name.toLowerCase()}.`)
-            need(numberBand.color, false, "The dark faces' number uses this color. Choose another color.")
-        }
+    if (active.includes("weather")) {
+        need("weather_city", text(c.weather_city).length >= 2 && text(c.weather_city).length <= 64, "Enter a city.")
+        need("weather_code", /^[A-Za-z]{0,3}$/.test(text(c.weather_code)), "Up to 3 letters.")
+        need("weather_units", inOptions(c.weather_units, WEATHER_UNITS), "Choose °F or °C.")
     }
     need("tz", RX.timezone.test(text(c.tz_libc)) && (!ctx.tzNames || ctx.tzNames.has(c.tz)), "Please select your time zone.")
     need("time_format", inOptions(c.time_format, TIME_FORMATS), "Please select the time format (AM/PM or 24h).")
@@ -474,6 +430,9 @@ function buildSaveJson(c) {
 function normalizeLoaded(c) {
     const out = readFaceIds(clone(c))
     out.face_schedule ??= []
+    out.weather_city ??= ""
+    out.weather_code ??= ""
+    if (!inOptions(out.weather_units, WEATHER_UNITS)) out.weather_units = "f"
     /**
      * Convert one integer-string setting to a number in the copied configuration, leaving other values alone.
      * @param {string} k - Key to convert within the copied configuration.
@@ -518,7 +477,7 @@ const NETWORK_KEYS = ["ssid", "password", "custom_mac", "dhcp", "ip", "netmask",
 // The list the page offers for each setting that is picked from one.
 const KEY_OPTIONS = {
     data_source: SOURCES, dexcom_server: DEXCOM_SERVERS, librelinkup_region: LLU_REGIONS, units: UNITS, data_old_color: OLD_DATA_COLORS,
-    face_cycle_interval_seconds: CYCLE_INTERVALS, time_format: TIME_FORMATS, alarm_repeat_interval_seconds: REPEATS, additional_wifi_type: WIFI_TYPES,
+    face_cycle_interval_seconds: CYCLE_INTERVALS, time_format: TIME_FORMATS, alarm_repeat_interval_seconds: REPEATS, additional_wifi_type: WIFI_TYPES, weather_units: WEATHER_UNITS,
     default_face: FACES.map(f => [f.id]), inactive_faces: FACES.map(f => [f.id]),
     brightness_level: [...Array.from({ length: 10 }, (_, i) => [i + 1]), ...BRIGHTNESS_MODES.filter(m => m[2] != null).map(m => [m[2]])],
     ...Object.fromEntries(ALARMS.map(a => [`alarm_${a.t}_snooze_interval`, SNOOZES])),

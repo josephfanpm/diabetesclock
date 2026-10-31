@@ -8,6 +8,7 @@
 #include "PeripheryManager.h"
 #include "ServerManager.h"
 #include "SettingsManager.h"
+#include "WeatherManager.h"
 #include "globals.h"
 #include "improv_consume.h"
 
@@ -93,6 +94,7 @@ void loop() {
         bgSourceManager.tick();
         bgDisplayManager.tick();
         bgAlarmManager.tick();
+        WeatherManager.tick();
 
     } else if (ServerManager.isInAPMode) {
         showJoinAP();

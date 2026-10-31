@@ -27,9 +27,9 @@
     "bg_color_urgent_high": "red",
     "brightness_mode": "auto_linear",
     "brightness_level": 100,
-    "default_face": "big_text",
+    "default_face": "value_and_diff",
     "face_cycle_enabled": false,
-    "inactive_faces": ["battery_uptime"],
+    "inactive_faces": ["weather"],
     "face_cycle_interval_seconds": 60,
     "face_schedule_enabled": false,
     "face_schedule": [],
@@ -91,5 +91,8 @@
         "speed": "normal"
     },
     "web_auth_enable": false,
-    "web_auth_password": ""
-}
+    "web_auth_password": "",
+    "weather_city": "",
+    "weather_code": "",
+    "weather_units": "f"
+}

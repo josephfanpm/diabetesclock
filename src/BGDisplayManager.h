@@ -7,22 +7,11 @@
 #include <vector>
 
 #include "BGDisplayFace.h"
-#include "BGDisplayFaceBatteryUptime.h"
-#include "BGDisplayFaceBigText.h"
-#include "BGDisplayFaceBigTextDark.h"
-#include "BGDisplayFaceBigTextRainbow.h"
 #include "BGDisplayFaceClock.h"
-#include "BGDisplayFaceDragon.h"
-#include "BGDisplayFaceGraph.h"
 #include "BGDisplayFaceGraphAndBG.h"
-#include "BGDisplayFaceRaceCar.h"
-#include "BGDisplayFaceRainbowClock.h"
-#include "BGDisplayFaceRainbowMood.h"
-#include "BGDisplayFaceSimple.h"
-#include "BGDisplayFaceSimpleDark.h"
 #include "BGDisplayFaceTimeOnly.h"
-#include "BGDisplayFaceUnicorn.h"
 #include "BGDisplayFaceValueAndDiff.h"
+#include "BGDisplayFaceWeather.h"
 #include "BGSource.h"
 #include "SettingsSchedule.h"
 

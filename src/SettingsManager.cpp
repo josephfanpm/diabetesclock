@@ -299,6 +299,11 @@ bool SettingsManager_::loadSettingsFromFile() {
     settings.web_auth_enable = (*doc)["web_auth_enable"].as<bool>();
     settings.web_auth_password = (*doc)["web_auth_password"].as<String>();
 
+    // Weather face
+    settings.weather_city = (*doc)["weather_city"] | "";
+    settings.weather_code = (*doc)["weather_code"] | "";
+    settings.weather_fahrenheit = (*doc)["weather_units"].as<String>() != "c";
+
     delete doc;
 
     this->settings = settings;
