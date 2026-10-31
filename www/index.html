@@ -374,6 +374,9 @@
                     const region = r.countryCode === "US" ? String(r.principalSubdivisionCode || "").replace("US-", "") : r.countryCode
                     state.weather.city = region ? `${name}, ${region}` : name
                     state.weather.coords = { latitude, longitude, name, admin1: r.principalSubdivision }
+                    // Fahrenheit for visitors in the US, Celsius everywhere else.
+                    state.weatherUnits = r.countryCode === "US" ? "f" : "c"
+                    renderControls()
                     document.getElementById("city").value = state.weather.city
                     document.getElementById("code").placeholder = cityCode(state.weather.city, "") || "NYC"
                     loadWeather()
