@@ -7,8 +7,9 @@
 #include "SettingsManager.h"
 #include "globals.h"
 
-uint8_t x_buffer[16];
-uint8_t x_position = 0;
+// Room for the longest Improv packet: 9 header bytes, up to 255 data bytes and the checksum.
+uint8_t x_buffer[9 + 255 + 1];
+size_t x_position = 0;
 
 void set_state(improv::State state) {
     std::vector<uint8_t> data = {'I', 'M', 'P', 'R', 'O', 'V'};
@@ -59,15 +60,19 @@ void set_error(improv::Error error) {
 }
 
 void onErrorCallback(improv::Error err) {
-    DisplayManager.showFatalError("ImprovWifi error: " + String(err));
+    // A garbled packet is reported back so the installer can resend it.
+    set_error(err);
 }
 
+// Scans without leaving the setup network, so a phone joined to it stays connected. Hidden networks
+// are left out.
 void getAvailableWifiNetworks() {
-    WiFi.mode(WIFI_STA);
-    WiFi.disconnect();
     int networkNum = WiFi.scanNetworks();
 
     for (int id = 0; id < networkNum; ++id) {
+        if (WiFi.SSID(id).isEmpty()) {
+            continue;
+        }
         std::vector<uint8_t> data = improv::build_rpc_response(
             improv::GET_WIFI_NETWORKS,
             {WiFi.SSID(id), String(WiFi.RSSI(id)),
@@ -135,7 +140,7 @@ bool onCommandCallback(improv::ImprovCommand cmd) {
         case improv::Command::GET_DEVICE_INFO: {
             std::vector<std::string> infos = {
                 // Firmware name
-                "Nightscout clock",
+                "Diabetes Clock",
                 // Firmware version
                 VERSION,
                 // Hardware chip/variant
@@ -162,12 +167,20 @@ bool onCommandCallback(improv::ImprovCommand cmd) {
     return true;
 }
 
+// Reads every waiting byte, so the installer's Wi-Fi setup isn't slowed by the display loop. A packet
+// ends with its checksum byte, at 9 + its data length; the next one starts again at position 0.
 void checckForImprovWifiConnection() {
-    if (Serial.available() > 0) {
+    while (Serial.available() > 0) {
         uint8_t b = Serial.read();
+        bool lastByte = x_position >= 9 && x_position == 9 + x_buffer[8];
 
-        if (parse_improv_serial_byte(x_position, b, x_buffer, onCommandCallback, onErrorCallback)) {
+        if (parse_improv_serial_byte(x_position, b, x_buffer, onCommandCallback, onErrorCallback) &&
+            !lastByte) {
             x_buffer[x_position++] = b;
+        } else if (!lastByte && x_position > 0 && b == 'I') {
+            // A broken packet followed by the start of a new one.
+            x_buffer[0] = b;
+            x_position = 1;
         } else {
             x_position = 0;
         }
