@@ -1,6 +1,7 @@
 {
-  "name": "Nightscout clock (Debug)",
+  "name": "Diabetes Clock (Debug)",
   "version": "1.1.2-debug",
+  "new_install_improv_wait_time": 20,
   "builds": [
     {
       "chipFamily": "ESP32",
