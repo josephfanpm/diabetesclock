@@ -17,17 +17,11 @@ BGAlarmManager_& BGAlarmManager_::getInstance() {
 // Initialize the global shared instance
 BGAlarmManager_& bgAlarmManager = bgAlarmManager.getInstance();
 
-#ifdef DEBUG_ALARMS
-
-int debounceTicks = 0;
-int debounceTicks2 = 0;
-int debounceTicks3 = 0;
-int debounceTicks7 = 0;
-int debounceTicks8 = 0;
-
-#endif
-
 void BGAlarmManager_::setup() {
+    // activeAlarm points into enabledAlarms, so it must not outlive a rebuild of the list.
+    activeAlarm = NULL;
+    enabledAlarms.clear();
+
     if (SettingsManager.settings.alarm_urgent_low_enabled) {
         AlarmData alarmData;
         alarmData.bottom = 1;
@@ -36,6 +30,8 @@ void BGAlarmManager_::setup() {
         alarmData.alertWindows = SettingsManager.settings.alarm_urgent_low_alert_windows;
         alarmData.lastAlarmTime = 0;
         alarmData.alarmSound = SettingsManager.settings.alarm_urgent_low_melody;
+        alarmData.isSnoozed = false;
+        alarmData.isUrgentLow = true;
         enabledAlarms.push_back(alarmData);
     }
     if (SettingsManager.settings.alarm_low_enabled) {
@@ -46,6 +42,7 @@ void BGAlarmManager_::setup() {
         alarmData.alertWindows = SettingsManager.settings.alarm_low_alert_windows;
         alarmData.lastAlarmTime = 0;
         alarmData.alarmSound = SettingsManager.settings.alarm_low_melody;
+        alarmData.isSnoozed = false;
         enabledAlarms.push_back(alarmData);
     }
     if (SettingsManager.settings.alarm_high_enabled) {
@@ -56,6 +53,7 @@ void BGAlarmManager_::setup() {
         alarmData.alertWindows = SettingsManager.settings.alarm_high_alert_windows;
         alarmData.lastAlarmTime = 0;
         alarmData.alarmSound = SettingsManager.settings.alarm_high_melody;
+        alarmData.isSnoozed = false;
         enabledAlarms.push_back(alarmData);
     }
 
@@ -106,119 +104,15 @@ static bool isInsideAlertWindow(const std::vector<AlertWindow>& alertWindows) {
     return false;
 }
 
-#ifdef DEBUG_ALARMS
-#endif
+void BGAlarmManager_::startAlarm(AlarmData& alarmData) {
+    activeAlarm = &alarmData;
+    alarmData.isSnoozed = false;
+    alarmData.lastAlarmTime = ServerManager.getUtcEpoch();
+    PeripheryManager.playRTTTLString(alarmData.alarmSound);
+    DEBUG_PRINTLN("Alarms: playing alarm sound (new alarm)");
+}
 
-void BGAlarmManager_::tick() {
-    auto glucoseReading = bgDisplayManager.getLastDisplayedGlucoseReading();
-    if (glucoseReading == nullptr ||
-        glucoseReading->getSecondsAgo() >
-            SettingsManager.settings.bg_data_too_old_threshold_minutes * 60) {
-        activeAlarm = NULL;
-
-#ifdef DEBUG_ALARMS
-
-        if (debounceTicks % 5000 == 0) {
-            DEBUG_PRINTLN("Alarms: no alarms as no glucose readings or readings are old");
-        }
-        debounceTicks++;
-        if (debounceTicks > 5000) {
-            debounceTicks = 0;
-        }
-#endif
-        return;
-    }
-
-    for (AlarmData& alarmData : enabledAlarms) {
-        if (glucoseReading->sgv >= alarmData.bottom && glucoseReading->sgv <= alarmData.top) {
-#ifdef DEBUG_ALARMS
-
-            if (debounceTicks2 % 5000 == 0) {
-                DEBUG_PRINTLN("Alarms: glucose reading in alarm range");
-            }
-            debounceTicks2++;
-            if (debounceTicks2 > 5000) {
-                debounceTicks2 = 0;
-            }
-
-#endif
-
-            if (!isInsideAlertWindow(alarmData.alertWindows)) {
-#ifdef DEBUG_ALARMS
-
-                if (debounceTicks3 % 5000 == 0) {
-                    DEBUG_PRINTLN("Alarms: outside every alert window, staying quiet");
-                }
-                debounceTicks3++;
-                if (debounceTicks3 > 5000) {
-                    debounceTicks3 = 0;
-                }
-#endif
-                if (activeAlarm != NULL) {
-                    activeAlarm->isSnoozed = false;
-                    activeAlarm->lastAlarmTime = 0;
-                }
-                activeAlarm = NULL;
-                return;
-            }
-            if (activeAlarm == NULL) {
-                if (bgDisplayManager.suppressesNewAlarms()) {
-                    return;
-                }
-                activeAlarm = &alarmData;
-                alarmData.lastAlarmTime = ServerManager.getUtcEpoch();
-                alarmData.isSnoozed = false;
-                PeripheryManager.playRTTTLString(alarmData.alarmSound);
-                DEBUG_PRINTLN("Playing alarm sound (nee alarm occurred)");
-            } else {
-                if (activeAlarm->isSnoozed) {
-                    if (activeAlarm->snoozeTimeMinutes != 0 &&
-                        ServerManager.getUtcEpoch() - activeAlarm->lastAlarmTime >
-                            60 * activeAlarm->snoozeTimeMinutes) {
-                        activeAlarm->isSnoozed = false;
-                        activeAlarm->lastAlarmTime = ServerManager.getUtcEpoch();
-                        PeripheryManager.playRTTTLString(alarmData.alarmSound);
-                        DEBUG_PRINTLN("Playing alarm sound after snooze");
-                    } else {
-#ifdef DEBUG_ALARMS
-
-                        if (debounceTicks8 % 5000 == 0) {
-                            DEBUG_PRINTLN(
-                                "Alarms: snoozed, too early to sound: " +
-                                String(ServerManager.getUtcEpoch() - activeAlarm->lastAlarmTime) +
-                                ", snooze interval: " + String(activeAlarm->snoozeTimeMinutes));
-                        }
-                        debounceTicks8++;
-                        if (debounceTicks8 > 5000) {
-                            debounceTicks8 = 0;
-                        }
-#endif
-                    }
-                } else {
-                    if (ServerManager.getUtcEpoch() - activeAlarm->lastAlarmTime >
-                        alarmIntervalSeconds) {
-                        activeAlarm->lastAlarmTime = ServerManager.getUtcEpoch();
-                        PeripheryManager.playRTTTLString(alarmData.alarmSound);
-                        DEBUG_PRINTLN("Playing alarm sound (alarm already active, not snoozed)");
-                    } else {
-#ifdef DEBUG_ALARMS
-
-                        if (debounceTicks7 % 5000 == 0) {
-                            DEBUG_PRINTLN(
-                                "Alarms: not snoozed, too early to sound: " +
-                                String(ServerManager.getUtcEpoch() - activeAlarm->lastAlarmTime));
-                        }
-                        debounceTicks7++;
-                        if (debounceTicks7 > 5000) {
-                            debounceTicks7 = 0;
-                        }
-#endif
-                    }
-                }
-            }
-            return;
-        }
-    }
+void BGAlarmManager_::clearActiveAlarm() {
     if (activeAlarm != NULL) {
         activeAlarm->isSnoozed = false;
         activeAlarm->lastAlarmTime = 0;
@@ -226,15 +120,99 @@ void BGAlarmManager_::tick() {
     activeAlarm = NULL;
 }
 
-void BGAlarmManager_::snoozeAlarm() {
-    if (activeAlarm != NULL && !activeAlarm->isSnoozed) {
-        DEBUG_PRINTLN("Snoozing alarm");
-        DisplayManager.clearMatrix();
-        DisplayManager.setTextColor(COLOR_CYAN);
-        DisplayManager.printText(0, 6, "Snoozed", TEXT_ALIGNMENT::CENTER, 0);
-        DisplayManager.update();
-        delay(2000);
-        bgDisplayManager.maybeRrefreshScreen(true);
-        activeAlarm->isSnoozed = true;
+// Plays the active alarm again when it is due. An urgent low that has not been silenced with a
+// button plays back to back, so it never goes quiet on its own.
+void BGAlarmManager_::soundActiveAlarmIfDue() {
+    const unsigned long now = ServerManager.getUtcEpoch();
+
+    if (activeAlarm->isSnoozed) {
+        if (activeAlarm->snoozeTimeMinutes != 0 &&
+            now - activeAlarm->lastAlarmTime > 60UL * activeAlarm->snoozeTimeMinutes) {
+            activeAlarm->isSnoozed = false;
+            activeAlarm->lastAlarmTime = now;
+            PeripheryManager.playRTTTLString(activeAlarm->alarmSound);
+            DEBUG_PRINTLN("Alarms: playing alarm sound after snooze");
+        }
+        return;
     }
+
+    if (activeAlarm->isUrgentLow) {
+        // The one-second floor keeps a melody that fails to load from being re-parsed every loop.
+        if (!PeripheryManager.isSoundPlaying() && now - activeAlarm->lastAlarmTime >= 1) {
+            activeAlarm->lastAlarmTime = now;
+            PeripheryManager.playRTTTLString(activeAlarm->alarmSound);
+        }
+        return;
+    }
+
+    if (now - activeAlarm->lastAlarmTime > (unsigned long)alarmIntervalSeconds) {
+        activeAlarm->lastAlarmTime = now;
+        PeripheryManager.playRTTTLString(activeAlarm->alarmSound);
+        DEBUG_PRINTLN("Alarms: playing alarm sound (alarm already active, not snoozed)");
+    }
+}
+
+void BGAlarmManager_::tick() {
+    auto glucoseReading = bgDisplayManager.getLastDisplayedGlucoseReading();
+    if (glucoseReading == nullptr ||
+        glucoseReading->getSecondsAgo() >
+            SettingsManager.settings.bg_data_too_old_threshold_minutes * 60) {
+        // Losing data does not mean the low is over: an urgent low keeps sounding until a
+        // button is pressed or a fresh reading shows it has ended.
+        if (activeAlarm != NULL && activeAlarm->isUrgentLow) {
+            soundActiveAlarmIfDue();
+            return;
+        }
+        clearActiveAlarm();
+        return;
+    }
+
+    for (AlarmData& alarmData : enabledAlarms) {
+        if (glucoseReading->sgv < alarmData.bottom || glucoseReading->sgv > alarmData.top) {
+            continue;
+        }
+
+        if (!isInsideAlertWindow(alarmData.alertWindows)) {
+            clearActiveAlarm();
+            return;
+        }
+
+        if (activeAlarm != &alarmData) {
+            // A different alarm is sounding (for example low dropping to urgent low). The new
+            // one starts fresh and does not inherit the old one's snooze.
+            clearActiveAlarm();
+
+            // The Time only face holds back new alarms, but never an urgent low.
+            if (!alarmData.isUrgentLow && bgDisplayManager.suppressesNewAlarms()) {
+                return;
+            }
+            startAlarm(alarmData);
+            return;
+        }
+
+        soundActiveAlarmIfDue();
+        return;
+    }
+
+    clearActiveAlarm();
+}
+
+bool BGAlarmManager_::snoozeAlarm() {
+    if (activeAlarm == NULL || activeAlarm->isSnoozed) {
+        return false;
+    }
+
+    DEBUG_PRINTLN("Snoozing alarm");
+    activeAlarm->isSnoozed = true;
+    // The snooze runs from the press, not from the last time the sound started.
+    activeAlarm->lastAlarmTime = ServerManager.getUtcEpoch();
+    PeripheryManager.stopSound();
+
+    DisplayManager.clearMatrix();
+    DisplayManager.setTextColor(COLOR_CYAN);
+    DisplayManager.printText(0, 6, "Snoozed", TEXT_ALIGNMENT::CENTER, 0);
+    DisplayManager.update();
+    delay(2000);
+    bgDisplayManager.maybeRrefreshScreen(true);
+    return true;
 }

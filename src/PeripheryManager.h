@@ -24,6 +24,8 @@ public:
     void tick();
     const char* readUptime();
     const void playRTTTLString(String rtttl);
+    bool isSoundPlaying();
+    void stopSound();
     const bool isButtonSelectPressed();
 };
 

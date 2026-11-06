@@ -60,6 +60,10 @@ PeripheryManager_& PeripheryManager = PeripheryManager.getInstance();
 
 void left_button_pressed(Button2& /*btn*/) {
     DEBUG_PRINTLN(F("Left button clicked"));
+    // Any button silences a sounding alarm; that press does nothing else.
+    if (bgAlarmManager.snoozeAlarm()) {
+        return;
+    }
     if (!BLOCK_NAVIGATION) {
         DisplayManager.leftButton();
     }
@@ -72,6 +76,9 @@ void left_button_pressed_long(Button2& /*btn*/) {
 
 void right_button_pressed(Button2& /*btn*/) {
     DEBUG_PRINTLN(F("Right button clicked"));
+    if (bgAlarmManager.snoozeAlarm()) {
+        return;
+    }
     if (!BLOCK_NAVIGATION) {
         DisplayManager.rightButton();
     }
@@ -84,7 +91,9 @@ void right_button_pressed_long(Button2& /*btn*/) {
 
 void select_button_pressed(Button2& /*btn*/) {
     DEBUG_PRINTLN(F("Select button clicked"));
-    bgAlarmManager.snoozeAlarm();
+    if (bgAlarmManager.snoozeAlarm()) {
+        return;
+    }
     if (!BLOCK_NAVIGATION) {
         DisplayManager.selectButton();
     }
@@ -265,3 +274,7 @@ const void PeripheryManager_::playRTTTLString(String rtttl) {
     Melody melody = MelodyFactory.loadRtttlString(rtttl.c_str());
     player.playAsync(melody);
 }
+
+bool PeripheryManager_::isSoundPlaying() { return player.isPlaying(); }
+
+void PeripheryManager_::stopSound() { player.stop(); }

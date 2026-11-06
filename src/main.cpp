@@ -93,12 +93,14 @@ void loop() {
     if (ServerManager.isConnected) {
         bgSourceManager.tick();
         bgDisplayManager.tick();
-        bgAlarmManager.tick();
         WeatherManager.tick();
 
     } else if (ServerManager.isInAPMode) {
         showJoinAP();
     }
+
+    // Outside the Wi-Fi check so a dropped connection cannot cut off a sounding alarm.
+    bgAlarmManager.tick();
 
     checckForImprovWifiConnection();
 

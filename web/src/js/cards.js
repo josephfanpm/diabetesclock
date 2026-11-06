@@ -860,7 +860,7 @@ async function loadFromNightscout() {
 function alarmsTab() {
     return el("div.stack",
         el("div.notice.info", el("b", "How alarms work. "),
-            "The volume is moderate, so test each sound with Try on clock. An alarm beeps 2 times (high), 3 times (low) or 4 times (urgent low), then pauses for the repeat interval; intensive mode keeps beeping without a pause. This continues until glucose is back in range or you press the clock's middle button to snooze, which shows SNOOZED for the snooze time. An alert with alert windows stays silent outside them."),
+            "The volume is moderate, so test each sound with Try on clock. An alarm beeps 2 times (high), 3 times (low) or 4 times (urgent low), then pauses for the repeat interval; intensive mode keeps beeping without a pause. Urgent low always beeps without a pause, on every face, and keeps going if Wi-Fi or glucose data drops out. An alarm continues until glucose is back in range or you press any button on the clock to snooze, which shows SNOOZED for the snooze time. An alert with alert windows stays silent outside them."),
         ...ALARMS.map(alarmCard),
         card("Repeat", null, el("div.stack",
             reactive(["alarm_intensive_mode"], () => {
